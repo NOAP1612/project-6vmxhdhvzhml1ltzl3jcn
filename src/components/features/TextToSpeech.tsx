@@ -28,6 +28,7 @@ export function TextToSpeech() {
     }
 
     setIsLoading(true);
+    setAudioUrl(null); // Reset previous audio
     try {
       const response = await textToSpeech({
         text,
@@ -43,11 +44,16 @@ export function TextToSpeech() {
           title: "הצלחה!",
           description: "הטקסט הומר לקול בהצלחה",
         });
+      } else {
+        // Handle cases where the function returns an error object
+        const errorData = response as { error?: string };
+        throw new Error(errorData.error || "An unknown error occurred");
       }
-    } catch (error) {
+    } catch (error: any) {
+      const errorMessage = error.message || "אירעה שגיאה בהמרת הטקסט לקול. אנא נסה שוב.";
       toast({
         title: "שגיאה",
-        description: "אירעה שגיאה בהמרת הטקסט לקול. אנא נסה שוב.",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {

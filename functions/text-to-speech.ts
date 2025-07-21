@@ -25,7 +25,9 @@ Deno.serve(async (req) => {
     });
 
     if (!response.ok) {
-      throw new Error(`OpenAI API error: ${response.statusText}`);
+      const errorBody = await response.json().catch(() => ({ error: { message: response.statusText } }));
+      const errorMessage = errorBody.error?.message || `OpenAI API error: ${response.status} ${response.statusText}`;
+      throw new Error(errorMessage);
     }
 
     const audioBuffer = await response.arrayBuffer();
