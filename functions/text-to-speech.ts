@@ -31,12 +31,20 @@ Deno.serve(async (req) => {
     }
 
     const audioBuffer = await response.arrayBuffer();
+    const uint8 = new Uint8Array(audioBuffer);
     
-    return new Response(audioBuffer, {
+    // btoa is not available in Deno's global scope, need to use a library or a polyfill
+    // For simplicity, let's use a simple implementation
+    let binary = '';
+    for (let i = 0; i < uint8.byteLength; i++) {
+        binary += String.fromCharCode(uint8[i]);
+    }
+    const base64String = btoa(binary);
+
+    return new Response(JSON.stringify({ audioData: base64String }), {
       status: 200,
       headers: { 
-        "Content-Type": "audio/mpeg",
-        "Content-Disposition": "attachment; filename=speech.mp3"
+        "Content-Type": "application/json"
       },
     });
 

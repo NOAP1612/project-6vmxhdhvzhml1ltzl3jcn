@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Volume2, Loader2, Play, Pause, Download, Mic } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { textToSpeech } from "@/functions";
 
 export function TextToSpeech() {
   const [text, setText] = useState('');
@@ -29,29 +30,20 @@ export function TextToSpeech() {
     setIsLoading(true);
     setAudioUrl(null);
     try {
-      // Call the function directly using fetch to handle binary response
-      const response = await fetch('/api/functions/text-to-speech', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('superdev_token')}`,
-        },
-        body: JSON.stringify({
-          text,
-          language
-        }),
+      const result = await textToSpeech({
+        text,
+        language
       });
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: 'Network error' }));
-        throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
-      }
+      if (result.audioData) {
+        const byteCharacters = atob(result.audioData);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+          byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
+        const blob = new Blob([byteArray], { type: 'audio/mpeg' });
 
-      // Check if response is audio or error JSON
-      const contentType = response.headers.get('content-type');
-      if (contentType && contentType.includes('audio')) {
-        const audioBuffer = await response.arrayBuffer();
-        const blob = new Blob([audioBuffer], { type: 'audio/mpeg' });
         const url = URL.createObjectURL(blob);
         setAudioUrl(url);
         
@@ -59,10 +51,10 @@ export function TextToSpeech() {
           title: "הצלחה!",
           description: "הטקסט הומר לקול בהצלחה",
         });
+      } else if (result.error) {
+        throw new Error(result.error);
       } else {
-        // Handle JSON error response
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Unknown error occurred");
+        throw new Error("תגובה לא צפויה מהשרת");
       }
     } catch (error: any) {
       const errorMessage = error.message || "אירעה שגיאה בהמרת הטקסט לקול. אנא נסה שוב.";
@@ -76,6 +68,7 @@ export function TextToSpeech() {
     }
   };
 
+  // ... keep existing code (handlePlay, handleDownload, sampleTexts, and JSX)
   const handlePlay = () => {
     if (audioRef.current) {
       if (isPlaying) {
