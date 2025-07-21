@@ -6,7 +6,6 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Volume2, Loader2, Play, Pause, Download, Mic } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { textToSpeech } from "@/functions";
 
 export function TextToSpeech() {
   const [text, setText] = useState('');
@@ -28,15 +27,31 @@ export function TextToSpeech() {
     }
 
     setIsLoading(true);
-    setAudioUrl(null); // Reset previous audio
+    setAudioUrl(null);
     try {
-      const response = await textToSpeech({
-        text,
-        language
+      // Call the function directly using fetch to handle binary response
+      const response = await fetch('/api/functions/text-to-speech', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('superdev_token')}`,
+        },
+        body: JSON.stringify({
+          text,
+          language
+        }),
       });
 
-      if (response instanceof ArrayBuffer) {
-        const blob = new Blob([response], { type: 'audio/mpeg' });
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: 'Network error' }));
+        throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      // Check if response is audio or error JSON
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('audio')) {
+        const audioBuffer = await response.arrayBuffer();
+        const blob = new Blob([audioBuffer], { type: 'audio/mpeg' });
         const url = URL.createObjectURL(blob);
         setAudioUrl(url);
         
@@ -45,9 +60,9 @@ export function TextToSpeech() {
           description: "הטקסט הומר לקול בהצלחה",
         });
       } else {
-        // Handle cases where the function returns an error object
-        const errorData = response as { error?: string };
-        throw new Error(errorData.error || "An unknown error occurred");
+        // Handle JSON error response
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Unknown error occurred");
       }
     } catch (error: any) {
       const errorMessage = error.message || "אירעה שגיאה בהמרת הטקסט לקול. אנא נסה שוב.";
