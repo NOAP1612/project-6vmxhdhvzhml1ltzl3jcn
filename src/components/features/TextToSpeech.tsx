@@ -68,7 +68,7 @@ export function TextToSpeech() {
     }
   };
 
-  // ... keep existing code (handlePlay, handleDownload, sampleTexts, and JSX)
+  // ... keep existing code (handlePlay, handleDownload functions)
   const handlePlay = () => {
     if (audioRef.current) {
       if (isPlaying) {
@@ -247,7 +247,7 @@ export function TextToSpeech() {
                 <span className="font-semibold text-gray-900">פרטי הקובץ</span>
               </div>
               <div className="text-sm text-gray-700 space-y-1">
-                <p>• קול: Alloy (מרצה מעניין)</p>
+                <p>• קול: Fable (מספר סיפורים גברי)</p>
                 <p>• פורמט: MP3</p>
                 <p>• איכות: גבוהה</p>
                 <p>• מופעל על ידי OpenAI TTS</p>

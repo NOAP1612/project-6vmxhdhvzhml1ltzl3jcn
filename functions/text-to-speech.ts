@@ -19,7 +19,7 @@ Deno.serve(async (req) => {
       body: JSON.stringify({
         model: "tts-1",
         input: text,
-        voice: "alloy",
+        voice: "fable",
         response_format: "mp3"
       }),
     });
