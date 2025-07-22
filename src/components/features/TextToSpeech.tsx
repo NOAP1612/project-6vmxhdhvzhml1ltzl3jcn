@@ -123,33 +123,6 @@ export function TextToSpeech() {
         </CardContent>
       </Card>
 
-      {/* Speed Control */}
-      <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
-        <CardContent className="pt-6">
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2 min-w-0">
-              <Gauge className="w-5 h-5 text-blue-600" />
-              <span className="font-medium text-blue-900">מהירות דיבור:</span>
-            </div>
-            <div className="flex-1 px-4">
-              <Slider
-                value={speed}
-                onValueChange={setSpeed}
-                max={3.0}
-                min={0.25}
-                step={0.25}
-                className="w-full"
-                disabled={isLoading}
-              />
-            </div>
-            <div className="min-w-0 text-left">
-              <div className="text-lg font-bold text-blue-900">×{speed[0]}</div>
-              <div className="text-sm text-blue-700">{getSpeedLabel(speed[0])}</div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
       <Card>
         <CardHeader>
           <CardTitle>המרת טקסט לדיבור</CardTitle>
@@ -178,10 +151,41 @@ export function TextToSpeech() {
           </Button>
 
           {audioUrl && (
-            <div className="pt-4">
+            <div className="space-y-4 pt-4">
               <audio controls src={audioUrl} className="w-full">
                 Your browser does not support the audio element.
               </audio>
+              
+              {/* Speed Control - Only shown when audio is ready */}
+              <Card className="bg-gradient-to-r from-orange-50 to-amber-50 border-orange-200 shadow-lg">
+                <CardContent className="pt-6">
+                  <div className="flex items-center gap-4 mb-4">
+                    <div className="w-8 h-8 bg-gradient-to-r from-orange-500 to-amber-500 rounded-lg flex items-center justify-center">
+                      <Gauge className="w-5 h-5 text-white" />
+                    </div>
+                    <span className="font-bold text-orange-900 text-lg">בקרת מהירות הפעלה</span>
+                  </div>
+                  <div className="flex items-center gap-6">
+                    <div className="flex-1">
+                      <Slider
+                        value={speed}
+                        onValueChange={setSpeed}
+                        max={3.0}
+                        min={0.25}
+                        step={0.25}
+                        className="w-full"
+                      />
+                    </div>
+                    <div className="text-center min-w-[100px]">
+                      <div className="text-2xl font-bold text-orange-900">×{speed[0]}</div>
+                      <div className="text-sm text-orange-700 font-medium">{getSpeedLabel(speed[0])}</div>
+                    </div>
+                  </div>
+                  <p className="text-sm text-orange-700 mt-3 text-center">
+                    שנה את המהירות והפעל שוב את ההקלטה כדי לשמוע את השינוי
+                  </p>
+                </CardContent>
+              </Card>
             </div>
           )}
         </CardContent>
