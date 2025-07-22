@@ -33,8 +33,6 @@ export function QuizGenerator() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
-  // ... keep existing code (withTimeout, handleFileChange, handleClearFile functions)
-
   const handleGenerate = async () => {
     if (!topic.trim()) {
       toast({
@@ -220,7 +218,127 @@ export function QuizGenerator() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          // ... keep existing code (file upload section and form fields)
+          <div className="space-y-2">
+            <Label>יצירה מתוך קובץ PDF (אופציונלי)</Label>
+            <div className="flex items-center gap-2">
+              <Label
+                htmlFor="pdf-upload"
+                className={`flex-grow flex items-center justify-center gap-2 cursor-pointer rounded-md border-2 border-dashed p-4 text-center text-gray-500 transition-colors hover:border-blue-500 hover:bg-blue-50 ${isUploading ? 'cursor-not-allowed bg-gray-100' : 'border-gray-300'}`}
+              >
+                {isUploading ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    <span>{uploadProgress}</span>
+                  </>
+                ) : (
+                  <>
+                    <Upload className="w-5 h-5" />
+                    <span>{fileName || 'לחץ לבחירת קובץ PDF'}</span>
+                  </>
+                )}
+              </Label>
+              <Input
+                id="pdf-upload"
+                type="file"
+                className="hidden"
+                onChange={handleFileChange}
+                accept="application/pdf"
+                disabled={isUploading}
+                ref={fileInputRef}
+              />
+              {fileName && !isUploading && (
+                <Button variant="ghost" size="icon" onClick={handleClearFile} className="shrink-0">
+                  <X className="w-5 h-5" />
+                </Button>
+              )}
+            </div>
+            
+            {isUploading && (
+              <div className="flex items-center justify-center p-4 bg-blue-50 rounded-lg border border-blue-200">
+                <div className="flex items-center gap-3">
+                  <div className="relative">
+                    <Loader2 className="w-6 h-6 animate-spin text-blue-600" />
+                    <div className="absolute inset-0 rounded-full border-2 border-blue-200 animate-pulse"></div>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-blue-800 font-medium">{uploadProgress}</p>
+                    <p className="text-blue-600 text-sm flex items-center gap-1">
+                      <Clock className="w-3 h-3" />
+                      אנא המתן, זה עשוי לקחת מספר רגעים...
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            <p className="text-xs text-gray-500">אין מגבלת עמודים. תומך בעברית ובאנגלית.</p>
+          </div>
+
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-white px-2 text-muted-foreground">או</span>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-2 md:col-span-2">
+              <Label htmlFor="topic">נושא השאלון - הדבקת טקסט (מהיר יותר)</Label>
+              <Textarea
+                id="topic"
+                placeholder="לדוגמה: היסטוריה של ישראל, או הדבק טקסט כאן"
+                value={topic}
+                onChange={(e) => setTopic(e.target.value)}
+                className="h-32"
+                disabled={isUploading}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="numQuestions">מספר שאלות</Label>
+              <Select value={numQuestions} onValueChange={setNumQuestions}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="3">3 שאלות</SelectItem>
+                  <SelectItem value="5">5 שאלות</SelectItem>
+                  <SelectItem value="10">10 שאלות</SelectItem>
+                  <SelectItem value="15">15 שאלות</SelectItem>
+                  <SelectItem value="20">20 שאלות</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="questionType">סוג השאלות</Label>
+              <Select value={questionType} onValueChange={setQuestionType}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="multiple">שאלות אמריקאיות</SelectItem>
+                  <SelectItem value="open">שאלות פתוחות</SelectItem>
+                  <SelectItem value="mixed">מעורב</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2 md:col-span-2">
+              <Label htmlFor="language">שפה</Label>
+              <Select value={language} onValueChange={setLanguage}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="hebrew">עברית</SelectItem>
+                  <SelectItem value="english">אנגלית</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
 
           <Button 
             onClick={handleGenerate} 
