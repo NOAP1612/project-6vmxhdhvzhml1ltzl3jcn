@@ -3,6 +3,7 @@ import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { MainContent } from "@/components/MainContent";
 import { Toaster } from "@/components/ui/toaster";
+import { BibliographyHelper } from '@/components/BibliographyHelper';
 
 const Index = () => {
   const [activeFeature, setActiveFeature] = useState('dashboard');
@@ -12,7 +13,13 @@ const Index = () => {
       <SidebarProvider>
         <div className="flex min-h-screen w-full">
           <AppSidebar activeFeature={activeFeature} setActiveFeature={setActiveFeature} />
-          <MainContent activeFeature={activeFeature} />
+          <MainContent activeFeature={activeFeature}>
+            {activeFeature === 'bibliography' && (
+              <div className="p-4">
+                <BibliographyHelper />
+              </div>
+            )}
+          </MainContent>
         </div>
       </SidebarProvider>
       <Toaster />
