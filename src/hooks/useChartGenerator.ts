@@ -1,123 +1,119 @@
 import { useState, useRef } from 'react';
 import { useToast } from "@/hooks/use-toast";
-import { generateChartsFromText } from "@/functions";
-import { uploadFile, extractDataFromUploadedFile } from "@/integrations/core";
+import { invokeLLM, uploadFile, extractDataFromUploadedFile } from "@/integrations/core";
+import { generateFormulaSheet } from "@/functions";
 
-export interface ChartData {
-  title: string;
-  type: 'bar' | 'pie' | 'line' | 'area';
-  data: { name: string; value: number | string; [key: string]: any }[];
+export interface ChartSuggestion {
+// ... keep existing code
 }
 
-export interface ChartsResponse {
-  charts: ChartData[];
+export interface ChartData {
+// ... keep existing code
+}
+
+export interface GeneratedChart {
+  title: string;
+  type: 'bar' | 'pie' | 'line' | 'area' | 'composed';
+  data: ChartData[];
 }
 
 export const useChartGenerator = () => {
-  const [sourceText, setSourceText] = useState('');
-  const [fileName, setFileName] = useState('');
-  const [isUploading, setIsUploading] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [chartsData, setChartsData] = useState<ChartsResponse | null>(null);
+// ... keep existing code
+  const [chartSuggestions, setChartSuggestions] = useState<ChartSuggestion[]>([]);
+  const [selectedChart, setSelectedChart] = useState<ChartSuggestion | null>(null);
+  const [chartData, setChartData] = useState<ChartData[] | null>(null);
+  const [formulaSheet, setFormulaSheet] = useState<GeneratedChart[] | null>(null);
+  const [isGeneratingSheet, setIsGeneratingSheet] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { toast } = useToast();
-
-  const withTimeout = async <T,>(promise: Promise<T>, timeoutMs: number): Promise<T> => {
-    const timeoutPromise = new Promise<never>((_, reject) => {
-      setTimeout(() => reject(new Error('Request timeout')), timeoutMs);
-    });
-    return Promise.race([promise, timeoutPromise]);
-  };
-
-  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFile = event.target.files?.[0];
-    if (!selectedFile) return;
-
-    if (selectedFile.type !== 'application/pdf') {
-      toast({
-        title: "קובץ לא נתמך",
-        description: "אנא העלה קובץ PDF בלבד.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setFileName(selectedFile.name);
-    setIsUploading(true);
-    setSourceText('');
-    setChartsData(null);
-
+// ... keep existing code
+  const handleGenerateChart = async (suggestion: ChartSuggestion) => {
+// ... keep existing code
     try {
-      toast({ title: "מעלה קובץ...", description: "שלב 1/2: מעלה קובץ..." });
-      const { file_url } = await withTimeout(uploadFile({ file: selectedFile }), 300000);
-      
-      toast({ title: "מעבד קובץ...", description: "שלב 2/2: מחלץ טקסט..." });
-      const schema = {
-        type: "object",
-        properties: { text_content: { type: "string" } },
-        required: ["text_content"],
-      };
-      const result = await withTimeout(extractDataFromUploadedFile({ file_url, json_schema: schema }), 600000);
+      const prompt = `Based on the following text and the chart suggestion, generate the data for the chart.
 
-      if (result.status === 'success' && result.output && typeof (result.output as any).text_content === 'string') {
-        setSourceText((result.output as { text_content: string }).text_content);
-        toast({ title: "הצלחה!", description: "הטקסט חולץ בהצלחה." });
+Text:
+${sourceText}
+
+Chart Suggestion:
+Title: ${suggestion.title}
+Description: ${suggestion.description}
+Type: ${suggestion.type}
+
+Return the data in the following JSON format, with at least 3 data points:
+{
+  "data": [
+    {"name": "Category 1", "value": 10},
+    {"name": "Category 2", "value": 20}
+  ]
+}`;
+      const result = await invokeLLM({
+// ... keep existing code
+      if (result && result.data) {
+        setChartData(result.data as ChartData[]);
       } else {
-        throw new Error(result.details || "Failed to extract text from PDF.");
+        throw new Error("Invalid chart data received");
       }
     } catch (error) {
-      console.error("Error processing file:", error);
-      toast({ title: "שגיאה בעיבוד הקובץ", description: "לא הצלחנו לחלץ את הטקסט מהקובץ.", variant: "destructive" });
-      setFileName('');
-    } finally {
-      setIsUploading(false);
-      if (fileInputRef.current) fileInputRef.current.value = '';
-    }
-  };
-
-  const handleGenerateCharts = async () => {
-    if (!sourceText.trim()) {
-      toast({ title: "שגיאה", description: "אנא הזן טקסט או העלה קובץ.", variant: "destructive" });
-      return;
-    }
-
-    setIsLoading(true);
-    setChartsData(null);
-
-    try {
-      const result = await generateChartsFromText({ text: sourceText });
-      if (result && result.charts && Array.isArray(result.charts) && result.charts.length > 0) {
-        setChartsData(result as ChartsResponse);
-        toast({ title: "הצלחה!", description: `נוצרו ${result.charts.length} גרפים.` });
-      } else {
-        throw new Error("לא התקבל מידע תקין ליצירת גרפים.");
-      }
-    } catch (error) {
-      console.error("Error generating charts:", error);
-      toast({ title: "שגיאה ביצירת גרפים", description: (error as Error).message || "אירעה שגיאה. אנא נסה שוב.", variant: "destructive" });
+// ... keep existing code
+      setSelectedChart(null);
     } finally {
       setIsLoading(false);
     }
   };
-  
+
+  const handleGenerateFormulaSheet = async () => {
+    if (!sourceText.trim()) {
+      toast({ title: "שגיאה", description: "אנא הזן טקסט או העלה קובץ תחילה", variant: "destructive" });
+      return;
+    }
+    setIsGeneratingSheet(true);
+    setFormulaSheet(null);
+    setChartSuggestions([]);
+    setChartData(null);
+    setSelectedChart(null);
+    try {
+      const result = await generateFormulaSheet({ text: sourceText });
+      if (result && result.charts) {
+        setFormulaSheet(result.charts);
+        toast({ title: "הצלחה!", description: `דף הנוסחאות נוצר עם ${result.charts.length} תרשימים.` });
+      } else {
+        throw new Error("Invalid data received from formula sheet generator");
+      }
+    } catch (error) {
+      console.error("Error generating formula sheet:", error);
+      toast({ title: "שגיאה", description: "אירעה שגיאה ביצירת דף הנוסחאות.", variant: "destructive" });
+    } finally {
+      setIsGeneratingSheet(false);
+    }
+  };
+
   const handleReset = () => {
-    setSourceText('');
-    setFileName('');
-    setChartsData(null);
-    setIsLoading(false);
-    setIsUploading(false);
+// ... keep existing code
+    setChartData(null);
+  };
+  
+  const handleFullReset = () => {
+// ... keep existing code
+    setChartSuggestions([]);
+    setSelectedChart(null);
+    setChartData(null);
+    setFormulaSheet(null);
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
   return {
-    sourceText, setSourceText,
-    fileName,
-    isUploading,
-    isLoading,
-    chartsData,
+// ... keep existing code
+    chartSuggestions,
+    selectedChart,
+    chartData,
+    formulaSheet,
+    isGeneratingSheet,
     fileInputRef,
     handleFileChange,
-    handleGenerateCharts,
+// ... keep existing code
+    handleGenerateChart,
+    handleGenerateFormulaSheet,
     handleReset,
+    handleFullReset,
   };
 };

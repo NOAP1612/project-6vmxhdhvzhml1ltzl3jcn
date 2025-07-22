@@ -1,71 +1,25 @@
-import { useQuizGenerator, QuizQuestion } from '@/hooks/useQuizGenerator';
+import React from 'react';
+import { useQuizGenerator } from '@/hooks/useQuizGenerator';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2, Upload, FileText, Check, X, RefreshCw } from 'lucide-react';
-import { cn } from '@/lib/utils';
-
-const QuestionCard = ({
-  question,
-  index,
-  userAnswer,
-  handleAnswerChange,
-  handleCheckAnswer,
-  isSubmitted,
-}: {
-  question: QuizQuestion;
-  index: number;
-  userAnswer?: string;
-  handleAnswerChange: (index: number, answer: string) => void;
-  handleCheckAnswer: (index: number) => void;
-  isSubmitted: boolean;
-}) => {
-  const getOptionClass = (option: string) => {
-    if (!question.isChecked) return '';
-    if (option === question.correctAnswer) return 'bg-green-100 border-green-400';
-    if (option === userAnswer) return 'bg-red-100 border-red-400';
-    return '';
-  };
-
-  return (
-    <Card className={cn("transition-all", question.isChecked && question.isCorrect === true && "border-green-500", question.isChecked && question.isCorrect === false && "border-red-500")}>
-      <CardHeader>
-        <CardTitle>{index + 1}. {question.question}</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <RadioGroup value={userAnswer} onValueChange={(value) => handleAnswerChange(index, value)} disabled={question.isChecked}>
-          {question.options.map((option, i) => (
-            <div key={i} className={cn("flex items-center space-x-2 p-3 rounded-md border", getOptionClass(option))}>
-              <RadioGroupItem value={option} id={`q${index}-o${i}`} />
-              <Label htmlFor={`q${index}-o${i}`} className="flex-1">{option}</Label>
-            </div>
-          ))}
-        </RadioGroup>
-        <div className="mt-4">
-          {!question.isChecked ? (
-            <Button onClick={() => handleCheckAnswer(index)} disabled={!userAnswer}>בדוק תשובה</Button>
-          ) : (
-            <div className={cn("p-3 rounded-md text-sm", question.isCorrect ? "bg-green-50 text-green-800" : "bg-red-50 text-red-800")}>
-              {question.isCorrect ? 'כל הכבוד! תשובה נכונה.' : `תשובה שגויה. ${question.explanation}`}
-            </div>
-          )}
-        </div>
-      </CardContent>
-    </Card>
-  );
-};
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Loader2, Upload, X, Wand2, Check, RefreshCw } from 'lucide-react';
 
 export const QuizGenerator = () => {
   const {
     sourceText, setSourceText,
     fileName,
     isUploading,
+    uploadProgress,
     isLoading,
     quizData,
     userAnswers,
     isSubmitted,
+    questionCount,
+    setQuestionCount,
     fileInputRef,
     handleFileChange,
     handleGenerateQuiz,
@@ -74,79 +28,110 @@ export const QuizGenerator = () => {
     handleReset,
   } = useQuizGenerator();
 
+  const getScore = () => {
+    if (!quizData) return 0;
+    return quizData.questions.filter(q => q.isCorrect).length;
+  };
+
   return (
-    <div className="p-6 space-y-6 max-w-4xl mx-auto">
-      <div className="text-center">
-        <h1 className="text-3xl font-bold">מחולל בחנים</h1>
-        <p className="text-gray-600 mt-2">הפוך כל טקסט לחידון אינטראקטיבי לתרגול ולמידה.</p>
-      </div>
-      {!quizData && (
-        <Card>
-          <CardContent className="p-6">
-            <div className="space-y-4">
+    <div className="p-4 md:p-6 max-w-4xl mx-auto" dir="rtl">
+      <Card className="bg-white/80 backdrop-blur-sm">
+        <CardHeader>
+          <CardTitle className="text-2xl font-bold text-center text-gray-800">מחולל בחנים אוטומטי</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {!quizData ? (
+            <div className="grid gap-6">
               <Textarea
-                placeholder="הדבק כאן את הטקסט שלך..."
+                placeholder="הדבק כאן את חומר הלימוד או העלה קובץ PDF..."
                 value={sourceText}
                 onChange={(e) => setSourceText(e.target.value)}
-                className="min-h-[150px] text-base"
-                disabled={isUploading || isLoading}
+                className="w-full p-2 border rounded"
+                rows={10}
               />
-              <div className="flex items-center justify-between">
-                <Button onClick={() => fileInputRef.current?.click()} disabled={isUploading || isLoading}>
+              <div className="flex items-center gap-4">
+                <Button onClick={() => fileInputRef.current?.click()} disabled={isUploading}>
                   <Upload className="ml-2 h-4 w-4" />
-                  {isUploading ? 'מעלה...' : 'העלה קובץ PDF'}
+                  {isUploading ? 'מעלה...' : 'העלה PDF'}
                 </Button>
-                <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept=".pdf" />
+                <Input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept=".pdf" />
                 {fileName && (
-                  <div className="flex items-center gap-2 text-sm text-gray-500">
+                  <div className="flex items-center gap-2 text-sm">
                     <span>{fileName}</span>
-                    <Button variant="ghost" size="icon" onClick={handleReset} disabled={isUploading || isLoading}>
+                    <Button variant="ghost" size="icon" onClick={() => handleReset()}>
                       <X className="h-4 w-4" />
                     </Button>
                   </div>
                 )}
               </div>
-            </div>
-            <div className="mt-4 flex justify-center">
-              <Button onClick={handleGenerateQuiz} disabled={isLoading || isUploading || !sourceText} size="lg">
-                {isLoading && <Loader2 className="ml-2 h-5 w-5 animate-spin" />}
-                צור בוחן
+              {isUploading && <p className="text-sm text-blue-600">{uploadProgress}</p>}
+              <div className="flex items-center gap-2">
+                <Label htmlFor="question-count">מספר שאלות:</Label>
+                <Input
+                  id="question-count"
+                  type="number"
+                  value={questionCount}
+                  onChange={(e) => setQuestionCount(Number(e.target.value))}
+                  className="w-20"
+                  min="1"
+                  max="20"
+                />
+              </div>
+              <Button onClick={handleGenerateQuiz} disabled={isLoading || !sourceText}>
+                {isLoading ? <Loader2 className="ml-2 h-4 w-4 animate-spin" /> : <Wand2 className="ml-2 h-4 w-4" />}
+                {isLoading ? 'יוצר בוחן...' : 'צור בוחן'}
               </Button>
             </div>
-          </CardContent>
-        </Card>
-      )}
-      {isLoading && (
-        <div className="flex flex-col items-center justify-center p-10 text-center">
-          <Loader2 className="h-12 w-12 animate-spin text-blue-600 mb-4" />
-          <p className="text-lg font-semibold">יוצר את הבוחן שלך...</p>
-          <p className="text-gray-500">זה עשוי לקחת מספר רגעים...</p>
-        </div>
-      )}
-      {quizData && (
-        <div className="space-y-6">
-          <div className="text-center">
-            <h2 className="text-2xl font-bold">{quizData.title}</h2>
-            <Button onClick={handleReset} variant="outline" className="mt-4">
-              <RefreshCw className="ml-2 h-4 w-4" />
-              התחל מחדש
-            </Button>
-          </div>
-          <div className="space-y-4">
-            {quizData.questions.map((q, i) => (
-              <QuestionCard
-                key={i}
-                index={i}
-                question={q}
-                userAnswer={userAnswers[i]}
-                handleAnswerChange={handleAnswerChange}
-                handleCheckAnswer={handleCheckAnswer}
-                isSubmitted={isSubmitted}
-              />
-            ))}
-          </div>
-        </div>
-      )}
+          ) : (
+            <div>
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-bold">{quizData.title}</h2>
+                {isSubmitted && (
+                  <div className="text-lg font-bold">
+                    ציון: {getScore()} / {quizData.questions.length}
+                  </div>
+                )}
+              </div>
+              <div className="space-y-6">
+                {quizData.questions.map((q, index) => (
+                  <Card key={index} className={`p-4 ${q.isChecked ? (q.isCorrect ? 'border-green-500' : 'border-red-500') : ''}`}>
+                    <p className="font-semibold mb-2">{index + 1}. {q.question}</p>
+                    <RadioGroup
+                      value={userAnswers[index]}
+                      onValueChange={(value) => handleAnswerChange(index, value)}
+                      disabled={q.isChecked}
+                    >
+                      {q.options.map((option, i) => (
+                        <div key={i} className="flex items-center space-x-2 space-x-reverse">
+                          <RadioGroupItem value={option} id={`q${index}-o${i}`} />
+                          <Label htmlFor={`q${index}-o${i}`}>{option}</Label>
+                        </div>
+                      ))}
+                    </RadioGroup>
+                    {!q.isChecked && (
+                      <Button size="sm" onClick={() => handleCheckAnswer(index)} className="mt-2">
+                        <Check className="ml-2 h-4 w-4" />
+                        בדיקה
+                      </Button>
+                    )}
+                    {q.isChecked && (
+                      <div className={`mt-2 text-sm p-2 rounded ${q.isCorrect ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                        {q.isCorrect ? 'תשובה נכונה!' : `תשובה לא נכונה. ${q.explanation}`}
+                      </div>
+                    )}
+                  </Card>
+                ))}
+              </div>
+              <div className="mt-6 flex justify-center">
+                <Button onClick={handleReset}>
+                  <RefreshCw className="ml-2 h-4 w-4" />
+                  התחל מחדש
+                </Button>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 };

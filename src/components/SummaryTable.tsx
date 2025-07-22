@@ -1,19 +1,24 @@
-import { useSummaryTable, SummaryItem } from '@/hooks/useSummaryTable';
+import React from 'react';
+import { useSummaryTable } from '@/hooks/useSummaryTable';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Loader2, Upload, Plus, Trash2, Wand2, X } from 'lucide-react';
+import { Loader2, Upload, X, Wand2, Plus, Trash2 } from 'lucide-react';
 
 export const SummaryTable = () => {
   const {
     topic, setTopic,
     sourceText, setSourceText,
     concepts,
+    language, setLanguage,
     isLoading,
     isUploading,
     isExtractingConcepts,
+    uploadProgress,
     fileName,
     summaryData,
     fileInputRef,
@@ -27,76 +32,94 @@ export const SummaryTable = () => {
   } = useSummaryTable();
 
   return (
-    <div className="p-6 space-y-6 max-w-5xl mx-auto">
-      <div className="text-center">
-        <h1 className="text-3xl font-bold">מחולל טבלאות סיכום</h1>
-        <p className="text-gray-600 mt-2">ארגן מידע מורכב בטבלאות ברורות ומסודרות.</p>
-      </div>
-
-      <Card>
-        <CardContent className="p-6 space-y-4">
-          <div>
-            <Label htmlFor="topic">נושא הטבלה</Label>
-            <Input id="topic" value={topic} onChange={(e) => setTopic(e.target.value)} placeholder="לדוגמה: מלחמת העולם השנייה" />
-          </div>
-          <div>
-            <Label htmlFor="source-text">טקסט מקור (אופציונלי)</Label>
-            <Textarea
-              id="source-text"
-              placeholder="הדבק טקסט לחילוץ מושגים אוטומטי..."
-              value={sourceText}
-              onChange={(e) => setSourceText(e.target.value)}
-              className="min-h-[120px]"
-            />
-          </div>
-          <div className="flex items-center justify-between">
-            <Button onClick={() => fileInputRef.current?.click()} disabled={isUploading || isLoading}>
-              <Upload className="ml-2 h-4 w-4" />
-              {isUploading ? 'מעלה...' : 'העלה PDF'}
-            </Button>
-            <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept=".pdf" />
-            {fileName && (
-              <div className="flex items-center gap-2 text-sm text-gray-500">
-                <span>{fileName}</span>
-                <Button variant="ghost" size="icon" onClick={handleClearFile} disabled={isUploading || isLoading}>
-                  <X className="h-4 w-4" />
+    <div className="p-4 md:p-6 max-w-4xl mx-auto" dir="rtl">
+      <Card className="bg-white/80 backdrop-blur-sm">
+        <CardHeader>
+          <CardTitle className="text-2xl font-bold text-center text-gray-800">מחולל טבלאות סיכום</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-6">
+            <div className="grid gap-2">
+              <Label htmlFor="topic">נושא הטבלה</Label>
+              <Input id="topic" placeholder="לדוגמה: מבוא לבינה מלאכותית" value={topic} onChange={(e) => setTopic(e.target.value)} />
+            </div>
+            
+            <div className="grid gap-2">
+              <Label>מקור מידע (אופציונלי)</Label>
+              <Textarea
+                placeholder="הדבק כאן טקסט או העלה קובץ PDF כדי לחלץ מושגים אוטומטית"
+                value={sourceText}
+                onChange={(e) => setSourceText(e.target.value)}
+                className="w-full p-2 border rounded"
+                rows={5}
+              />
+              <div className="flex items-center gap-2">
+                <Button onClick={() => fileInputRef.current?.click()} disabled={isUploading}>
+                  <Upload className="ml-2 h-4 w-4" />
+                  {isUploading ? 'מעלה...' : 'העלה PDF'}
                 </Button>
+                <Input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept=".pdf" />
+                {fileName && (
+                  <div className="flex items-center gap-2 text-sm">
+                    <span>{fileName}</span>
+                    <Button variant="ghost" size="icon" onClick={handleClearFile}>
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                )}
               </div>
-            )}
-          </div>
-          <div>
-            <Label>מושגים לסיכום</Label>
-            <div className="space-y-2">
+              {isUploading && <p className="text-sm text-blue-600">{uploadProgress}</p>}
+            </div>
+
+            <div className="grid gap-2">
+              <Label>מושגים לסיכום</Label>
               {concepts.map((concept, index) => (
                 <div key={index} className="flex items-center gap-2">
-                  <Input value={concept} onChange={(e) => updateConcept(index, e.target.value)} placeholder={`מושג ${index + 1}`} />
+                  <Input
+                    placeholder={`מושג ${index + 1}`}
+                    value={concept}
+                    onChange={(e) => updateConcept(index, e.target.value)}
+                  />
                   <Button variant="outline" size="icon" onClick={() => removeConcept(index)} disabled={concepts.length <= 1}>
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
               ))}
+              <div className="flex gap-2 mt-2">
+                <Button variant="outline" onClick={addConcept}>
+                  <Plus className="ml-2 h-4 w-4" />
+                  הוסף מושג
+                </Button>
+                <Button onClick={handleExtractConcepts} disabled={isExtractingConcepts || (!sourceText && !topic)}>
+                  {isExtractingConcepts ? <Loader2 className="ml-2 h-4 w-4 animate-spin" /> : <Wand2 className="ml-2 h-4 w-4" />}
+                  חלץ מושגים אוטומטית
+                </Button>
+              </div>
             </div>
-            <div className="flex items-center gap-4 mt-2">
-              <Button variant="outline" onClick={addConcept}>
-                <Plus className="ml-2 h-4 w-4" /> הוסף מושג
-              </Button>
-              <Button onClick={handleExtractConcepts} disabled={isExtractingConcepts || (!sourceText && !topic)}>
-                {isExtractingConcepts && <Loader2 className="ml-2 h-4 w-4 animate-spin" />}
-                <Wand2 className="ml-2 h-4 w-4" /> חלץ מושגים אוטומטית
-              </Button>
+
+            <div className="grid gap-2">
+              <Label htmlFor="language">שפת הסיכום</Label>
+              <Select value={language} onValueChange={setLanguage}>
+                <SelectTrigger>
+                  <SelectValue placeholder="בחר שפה" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="hebrew">עברית</SelectItem>
+                  <SelectItem value="english">אנגלית</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
-          </div>
-          <div className="flex justify-center pt-4">
-            <Button onClick={handleGenerate} disabled={isLoading || concepts.every(c => !c.trim()) || !topic} size="lg">
-              {isLoading && <Loader2 className="ml-2 h-5 w-5 animate-spin" />}
-              צור טבלת סיכום
+
+            <Button onClick={handleGenerate} disabled={isLoading || concepts.every(c => !c.trim()) || !topic}>
+              {isLoading ? <Loader2 className="ml-2 h-4 w-4 animate-spin" /> : <Wand2 className="ml-2 h-4 w-4" />}
+              {isLoading ? 'יוצר טבלה...' : 'צור טבלת סיכום'}
             </Button>
           </div>
         </CardContent>
       </Card>
 
       {summaryData && (
-        <Card>
+        <Card className="mt-6">
           <CardHeader>
             <CardTitle>{summaryData.title}</CardTitle>
           </CardHeader>
@@ -106,7 +129,7 @@ export const SummaryTable = () => {
                 <TableRow>
                   <TableHead>מושג</TableHead>
                   <TableHead>הגדרה</TableHead>
-                  <TableHead>הרחבה</TableHead>
+                  <TableHead>הסבר</TableHead>
                   <TableHead>דוגמה</TableHead>
                 </TableRow>
               </TableHeader>
@@ -116,7 +139,7 @@ export const SummaryTable = () => {
                     <TableCell className="font-medium">{item.concept}</TableCell>
                     <TableCell>{item.definition}</TableCell>
                     <TableCell>{item.explanation}</TableCell>
-                    <TableCell>{item.example}</TableCell>
+                    <TableCell>{item.example || 'N/A'}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
