@@ -227,12 +227,15 @@ export const useSummaryTable = () => {
       return;
     }
 
+    const textToAnalyze = sourceText || topic;
+
     setIsLoading(true);
     try {
       const result = await generateSummaryTable({
         topic,
         concepts: validConcepts,
-        language
+        language,
+        text: textToAnalyze,
       });
 
       if (result.summary) {

@@ -1,101 +1,70 @@
+import { OpenAI } from "npm:openai@4.47.1";
+
+const openai = new OpenAI({
+  apiKey: Deno.env.get("OPENAI_API_KEY"),
+});
+
 Deno.serve(async (req) => {
   try {
-    const { topic, concepts, language } = await req.json();
-    
-    const openaiApiKey = Deno.env.get("OPENAI_API_KEY");
-    if (!openaiApiKey) {
-      return new Response(JSON.stringify({ error: "OpenAI API key not configured" }), {
-        status: 500,
-        headers: { "Content-Type": "application/json" },
-      });
-    }
+    const { topic, concepts, language, text } = await req.json();
 
-    const conceptList = concepts.join(', ');
+    const prompt = `
+You are an academic assistant specializing in creating detailed summary tables in ${language}. Your task is to create a summary for the topic "${topic}" based on the provided text.
 
-    const prompt = language === 'hebrew'
-      ? `צור טבלת סיכום בנושא "${topic}" עבור המושגים הבאים: ${conceptList}.
-עבור כל מושג, ספק:
-1. הגדרה קצרה וברורה
-2. הסבר מפורט יותר
-3. דוגמה קצרה (משפט אחד) הממחישה את המושג
+The summary table should focus on the following concepts:
+- ${concepts.join("\n- ")}
 
-החזר את התשובה בפורמט JSON הבא:
-{
-  "title": "סיכום בנושא: ${topic}",
-  "summary": [
+CRITICAL INSTRUCTIONS:
+1.  STRICT GROUNDING: Base your ENTIRE output STRICTLY on the information found within the provided text. DO NOT use any external knowledge or make assumptions.
+2.  NO HALLUCINATIONS: If the text does not contain information for a specific concept or column (definition, explanation, example), you MUST write "Not specified in text" in the corresponding cell. Do not invent information.
+3.  FOCUS ON SUBSTANCE: For each concept, extract its definition, a detailed explanation, and a relevant example from the text.
+4.  LANGUAGE: The entire output, including the title and all table content, must be in ${language}.
+5.  JSON FORMAT: Return the output as a single JSON object with the following structure:
     {
-      "concept": "שם המושג",
-      "definition": "הגדרה קצרה של המושג",
-      "explanation": "הסבר מפורט יותר של המושג",
-      "example": "דוגמה קצרה הממחישה את המושג"
+      "title": "A concise title for the summary table in ${language}",
+      "summary": [
+        {
+          "concept": "The concept name",
+          "definition": "The definition from the text",
+          "explanation": "The explanation from the text",
+          "example": "An example from the text, or 'Not specified in text'"
+        }
+      ]
     }
-  ]
-}`
-      : `Create a summary table on the topic "${topic}" for the following concepts: ${conceptList}.
-For each concept, provide:
-1. A short, clear definition
-2. A more detailed explanation
-3. A short example (one sentence) that illustrates the concept
+    Ensure the 'summary' array contains one object for each concept provided.
 
-Return the response in the following JSON format:
-{
-  "title": "Summary on: ${topic}",
-  "summary": [
-    {
-      "concept": "Concept Name",
-      "definition": "A brief definition of the concept",
-      "explanation": "A more detailed explanation of the concept",
-      "example": "A short example illustrating the concept"
-    }
-  ]
-}`;
+Here is the text:
+---
+${text}
+---
 
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${openaiApiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "gpt-4o-mini",
-        messages: [
-          {
-            role: "system",
-            content: language === 'hebrew'
-              ? "אתה מומחה ביצירת טבלאות סיכום חינוכיות. תמיד החזר תשובה בעברית בפורמט JSON תקין."
-              : "You are an expert at creating educational summary tables. Always return a valid JSON response."
-          },
-          {
-            role: "user",
-            content: prompt
-          }
-        ],
-        temperature: 0.5,
-        response_format: { type: "json_object" }
-      }),
+Generate the summary table based only on the text above.
+`;
+
+    const response = await openai.chat.completions.create({
+      model: 'gpt-4o', // Upgraded model for higher accuracy
+      messages: [
+        { role: 'system', content: 'You are an academic assistant that generates summary tables from text in a specific JSON format.' },
+        { role: 'user', content: prompt }
+      ],
+      response_format: { type: "json_object" },
     });
 
-    if (!response.ok) {
-      const errorBody = await response.text();
-      throw new Error(`OpenAI API error: ${response.status} - ${errorBody}`);
+    const content = response.choices[0].message.content;
+    if (!content) {
+      throw new Error("OpenAI returned empty content.");
     }
 
-    const data = await response.json();
-    const content = JSON.parse(data.choices[0].message.content);
-
-    return new Response(JSON.stringify(content), {
-      status: 200,
+    return new Response(content, {
       headers: { "Content-Type": "application/json" },
+      status: 200,
     });
 
   } catch (error) {
     console.error("Error generating summary table:", error);
-    return new Response(JSON.stringify({ 
-      error: "Failed to generate summary table",
-      details: error.message 
-    }), {
-      status: 500,
+    return new Response(JSON.stringify({ error: error.message }), {
       headers: { "Content-Type": "application/json" },
+      status: 500,
     });
   }
 });
