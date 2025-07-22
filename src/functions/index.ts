@@ -1,6 +1,6 @@
 import { superdevClient } from "@/lib/superdev/client";
 
-export const generateChartsFromText = superdevClient.functions.generateChartsFromText;
+export const readTextOutLoud = superdevClient.functions.readTextOutLoud;
 export const createQuizQuestions = superdevClient.functions.createQuizQuestions;
 export const createStudyPost = superdevClient.functions.createStudyPost;
 export const generateSummaryTable = superdevClient.functions.generateSummaryTable;
@@ -11,3 +11,4 @@ export const generateStudySchedule = superdevClient.functions.generateStudySched
 export const processDriveLink = superdevClient.functions.processDriveLink;
 export const generateInteractiveQuiz = superdevClient.functions.generateInteractiveQuiz;
 export const extractConcepts = superdevClient.functions.extractConcepts;
+export const generateChartsFromText = superdevClient.functions.generateChartsFromText;

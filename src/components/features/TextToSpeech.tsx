@@ -1,7 +1,59 @@
+import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Volume2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/hooks/use-toast";
+import { readTextOutLoud } from "@/functions";
+import { Volume2, Loader2, Play } from "lucide-react";
 
 export function TextToSpeech() {
+  const [text, setText] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [audioUrl, setAudioUrl] = useState<string | null>(null);
+  const { toast } = useToast();
+
+  const handleGenerateSpeech = async () => {
+    if (!text.trim()) {
+      toast({
+        title: "שגיאה",
+        description: "אנא הזן טקסט להמרה.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsLoading(true);
+    setAudioUrl(null);
+
+    try {
+      const response = await readTextOutLoud({ text });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+      }
+
+      const audioBlob = await response.blob();
+      const url = URL.createObjectURL(audioBlob);
+      setAudioUrl(url);
+
+      toast({
+        title: "הצלחה!",
+        description: "הקול נוצר בהצלחה.",
+      });
+
+    } catch (error) {
+      console.error("Error generating speech:", error);
+      toast({
+        title: "שגיאה",
+        description: "אירעה שגיאה ביצירת הקול. אנא נסה שוב.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="flex items-center gap-3 mb-6">
@@ -16,17 +68,38 @@ export function TextToSpeech() {
 
       <Card>
         <CardHeader>
-          <CardTitle>קריאה בקול - Fable</CardTitle>
-          <CardDescription>הכלי להמרת טקסט לדיבור יתווסף בקרוב</CardDescription>
+          <CardTitle>המרת טקסט לדיבור</CardTitle>
+          <CardDescription>הדבק את הטקסט שברצונך להפוך לדיבור ולחץ על הכפתור.</CardDescription>
         </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-center p-12 text-gray-500">
-            <div className="text-center">
-              <Volume2 className="w-16 h-16 mx-auto mb-4 text-gray-400" />
-              <p className="text-lg font-medium">בפיתוח</p>
-              <p>הכלי להמרת טקסט לדיבור עם קול Fable יהיה זמין בקרוב</p>
+        <CardContent className="space-y-4">
+          <Textarea
+            placeholder="הזן כאן את הטקסט שלך..."
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            className="h-48"
+            disabled={isLoading}
+          />
+          <Button onClick={handleGenerateSpeech} disabled={isLoading || !text.trim()} className="w-full">
+            {isLoading ? (
+              <>
+                <Loader2 className="ml-2 h-4 w-4 animate-spin" />
+                מעבד...
+              </>
+            ) : (
+              <>
+                <Play className="ml-2 h-4 w-4" />
+                המר לדיבור
+              </>
+            )}
+          </Button>
+
+          {audioUrl && (
+            <div className="pt-4">
+              <audio controls src={audioUrl} className="w-full">
+                Your browser does not support the audio element.
+              </audio>
             </div>
-          </div>
+          )}
         </CardContent>
       </Card>
     </div>
