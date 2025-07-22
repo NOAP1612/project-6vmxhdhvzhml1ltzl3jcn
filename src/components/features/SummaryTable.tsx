@@ -11,50 +11,46 @@ import { useToast } from "@/hooks/use-toast";
 import { generateSummaryTable } from "@/functions";
 import { extractConcepts } from "@/functions";
 import { uploadFile, extractDataFromUploadedFile } from "@/integrations/core";
-
-interface SummaryItem {
-  concept: string;
-  definition: string;
-  explanation: string;
-  example?: string;
-}
-
-interface SummaryData {
-  title: string;
-  summary: SummaryItem[];
-}
+import { useSummaryTable, SummaryData } from '@/context/SummaryTableContext';
 
 export function SummaryTable() {
-  const [topic, setTopic] = useState('');
-  const [sourceText, setSourceText] = useState('');
-  const [concepts, setConcepts] = useState<string[]>(['']);
-  const [language, setLanguage] = useState('hebrew');
+  const {
+    topic, setTopic,
+    sourceText, setSourceText,
+    concepts, setConcepts,
+    language, setLanguage,
+    fileName, setFileName,
+    uploadProgress, setUploadProgress,
+    summaryData, setSummaryData
+  } = useSummaryTable();
+
   const [isLoading, setIsLoading] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [isExtractingConcepts, setIsExtractingConcepts] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState('');
-  const [fileName, setFileName] = useState('');
-  const [summaryData, setSummaryData] = useState<SummaryData | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
   const addConcept = () => {
+// ... keep existing code
     setConcepts([...concepts, '']);
   };
 
   const removeConcept = (index: number) => {
+// ... keep existing code
     if (concepts.length > 1) {
       setConcepts(concepts.filter((_, i) => i !== index));
     }
   };
 
   const updateConcept = (index: number, value: string) => {
+// ... keep existing code
     const newConcepts = [...concepts];
     newConcepts[index] = value;
     setConcepts(newConcepts);
   };
 
   const withTimeout = async <T,>(promise: Promise<T>, timeoutMs: number): Promise<T> => {
+// ... keep existing code
     const timeoutPromise = new Promise<never>((_, reject) => {
       setTimeout(() => reject(new Error('Request timeout')), timeoutMs);
     });
@@ -63,10 +59,12 @@ export function SummaryTable() {
   };
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+// ... keep existing code
     const selectedFile = event.target.files?.[0];
     if (!selectedFile) return;
 
     if (selectedFile.type !== 'application/pdf') {
+// ... keep existing code
       toast({
         title: "קובץ לא נתמך",
         description: "אנא העלה קובץ PDF בלבד.",
@@ -83,6 +81,7 @@ export function SummaryTable() {
     setUploadProgress('מעלה קובץ...');
 
     try {
+// ... keep existing code
       toast({
         title: "מעלה קובץ...",
         description: "שלב 1 מתוך 2: מעלה את הקובץ לשרת.",
@@ -95,11 +94,13 @@ export function SummaryTable() {
 
       setUploadProgress('מעבד את הקובץ...');
       toast({
+// ... keep existing code
         title: "מעבד את הקובץ...",
         description: "שלב 2 מתוך 2: מחלץ טקסט מהקובץ.",
       });
 
       const schema = {
+// ... keep existing code
         type: "object",
         properties: {
           text_content: {
@@ -111,6 +112,7 @@ export function SummaryTable() {
       };
 
       const result = await withTimeout(
+// ... keep existing code
         extractDataFromUploadedFile({
           file_url,
           json_schema: schema,
@@ -119,6 +121,7 @@ export function SummaryTable() {
       );
 
       if (result.status === 'success' && result.output && typeof (result.output as any).text_content === 'string') {
+// ... keep existing code
         const content = (result.output as { text_content: string }).text_content;
         setSourceText(content);
         setUploadProgress('הושלם בהצלחה!');
@@ -130,10 +133,12 @@ export function SummaryTable() {
         throw new Error(result.details || "Failed to extract text from PDF.");
       }
     } catch (error) {
+// ... keep existing code
       console.error("Error processing file:", error);
       let description = "לא הצלחנו לחלץ את הטקסט מהקובץ. אנא ודא שהקובץ תקין ונסה שוב.";
       
       if (error instanceof Error) {
+// ... keep existing code
         if (error.message === 'Request timeout') {
           description = "הבקשה ארכה יותר מדי זמן. אנא נסה שוב עם קובץ קטן יותר.";
         } else if (error.message === 'Failed to fetch') {
@@ -142,6 +147,7 @@ export function SummaryTable() {
       }
       
       toast({
+// ... keep existing code
         title: "שגיאה בעיבוד הקובץ",
         description: description,
         variant: "destructive",
@@ -149,6 +155,7 @@ export function SummaryTable() {
       setFileName('');
       setUploadProgress('');
     } finally {
+// ... keep existing code
       setIsUploading(false);
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
@@ -157,6 +164,7 @@ export function SummaryTable() {
   };
 
   const handleClearFile = () => {
+// ... keep existing code
     setFileName('');
     setSourceText('');
     setUploadProgress('');
@@ -166,6 +174,7 @@ export function SummaryTable() {
   };
 
   const handleExtractConcepts = async () => {
+// ... keep existing code
     const textToAnalyze = sourceText || topic;
     
     if (!textToAnalyze.trim()) {
@@ -178,6 +187,7 @@ export function SummaryTable() {
     }
 
     if (!topic.trim()) {
+// ... keep existing code
       toast({
         title: "שגיאה",
         description: "אנא הזן נושא לטבלה",
@@ -188,6 +198,7 @@ export function SummaryTable() {
 
     setIsExtractingConcepts(true);
     try {
+// ... keep existing code
       const result = await extractConcepts({
         text: textToAnalyze,
         topic: topic,
@@ -195,6 +206,7 @@ export function SummaryTable() {
       });
 
       if (result.concepts && Array.isArray(result.concepts)) {
+// ... keep existing code
         setConcepts(result.concepts);
         toast({
           title: "הצלחה!",
@@ -204,6 +216,7 @@ export function SummaryTable() {
         throw new Error("לא הצלחנו לחלץ מושגים מהטקסט");
       }
     } catch (error) {
+// ... keep existing code
       console.error("Error extracting concepts:", error);
       toast({
         title: "שגיאה",
@@ -216,6 +229,7 @@ export function SummaryTable() {
   };
 
   const handleGenerate = async () => {
+// ... keep existing code
     const validConcepts = concepts.filter(c => c.trim());
     
     if (!topic.trim()) {
@@ -228,6 +242,7 @@ export function SummaryTable() {
     }
 
     if (validConcepts.length === 0) {
+// ... keep existing code
       toast({
         title: "שגיאה",
         description: "אנא הזן לפחות מושג אחד",
@@ -238,6 +253,7 @@ export function SummaryTable() {
 
     setIsLoading(true);
     try {
+// ... keep existing code
       const result = await generateSummaryTable({
         topic,
         concepts: validConcepts,
@@ -252,6 +268,7 @@ export function SummaryTable() {
         });
       }
     } catch (error) {
+// ... keep existing code
       toast({
         title: "שגיאה",
         description: "אירעה שגיאה ביצירת הטבלה. אנא נסה שוב.",
@@ -263,6 +280,7 @@ export function SummaryTable() {
   };
 
   return (
+// ... keep existing code
     <div className="space-y-6 animate-fade-in">
       <div className="flex items-center gap-3 mb-6">
         <div className="w-10 h-10 bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl flex items-center justify-center">
