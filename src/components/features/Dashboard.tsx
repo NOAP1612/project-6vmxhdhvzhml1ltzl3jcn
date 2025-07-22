@@ -118,7 +118,7 @@ export function Dashboard() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Quick Actions */}
-        <Card className="glass-effect border border-green-200">
+        <Card className="glass-effect tech-border">
           <CardHeader className="pb-4">
             <div className="flex items-center gap-3">
               <Zap className="w-6 h-6 text-green-600 animate-pulse" />
@@ -143,7 +143,7 @@ export function Dashboard() {
         </Card>
 
         {/* Recent Activity */}
-        <Card className="glass-effect border border-green-200">
+        <Card className="glass-effect tech-border">
           <CardHeader className="pb-4">
             <div className="flex items-center gap-3">
               <Activity className="w-6 h-6 text-green-600 animate-pulse" />
