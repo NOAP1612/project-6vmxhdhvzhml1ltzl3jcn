@@ -118,7 +118,7 @@ export function Dashboard() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Quick Actions */}
-        <Card className="glass-effect tech-border">
+        <Card className="glass-effect border border-green-200">
           <CardHeader className="pb-4">
             <div className="flex items-center gap-3">
               <Zap className="w-6 h-6 text-green-600 animate-pulse" />
@@ -143,7 +143,7 @@ export function Dashboard() {
         </Card>
 
         {/* Recent Activity */}
-        <Card className="glass-effect tech-border">
+        <Card className="glass-effect border border-green-200">
           <CardHeader className="pb-4">
             <div className="flex items-center gap-3">
               <Activity className="w-6 h-6 text-green-600 animate-pulse" />
@@ -160,11 +160,11 @@ export function Dashboard() {
                   <div className={`w-10 h-10 bg-white rounded-full flex items-center justify-center tech-shadow`}>
                     <activity.icon className={`w-5 h-5 ${activity.color}`} />
                   </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-gray-900">{activity.action}</p>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-gray-900 truncate">{activity.action}</p>
                     <p className="text-xs text-gray-500">{activity.time}</p>
                   </div>
-                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse flex-shrink-0"></div>
                 </div>
               ))}
             </div>

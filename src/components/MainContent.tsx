@@ -45,8 +45,8 @@ export function MainContent({ activeFeature }: MainContentProps) {
   };
 
   return (
-    <main className="flex-1 p-6 overflow-auto">
-      <div className="max-w-6xl mx-auto">
+    <main className="flex-1 p-6 overflow-y-auto overflow-x-hidden">
+      <div className="max-w-6xl mx-auto w-full">
         {renderFeature()}
       </div>
     </main>
