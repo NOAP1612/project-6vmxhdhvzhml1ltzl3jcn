@@ -9,7 +9,7 @@ const openai = new OpenAI({
 Deno.serve(async (req) => {
   try {
     // Extract text and voice from the request body
-    const { text, voice = 'fable' } = await req.json();
+    const { text, voice = 'alloy' } = await req.json();
 
     // Ensure text is provided
     if (!text) {
@@ -22,7 +22,7 @@ Deno.serve(async (req) => {
     // Call the OpenAI API to generate speech
     const mp3 = await openai.audio.speech.create({
       model: "tts-1",
-      voice: voice, // Use the 'fable' voice as requested
+      voice: voice, // Now using 'alloy' as the default voice
       input: text,
     });
 
