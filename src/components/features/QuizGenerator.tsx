@@ -66,10 +66,10 @@ export function QuizGenerator() {
         description: "שלב 1 מתוך 2: מעלה את הקובץ לשרת.",
       });
 
-      // העלאת קובץ עם timeout של 30 שניות
+      // העלאת קובץ עם timeout של 2 דקות
       const { file_url } = await withTimeout(
         uploadFile({ file: selectedFile }), 
-        30000
+        120000 // Increased from 30000
       );
 
       setUploadProgress('מעבד את הקובץ...');
@@ -89,13 +89,13 @@ export function QuizGenerator() {
         required: ["text_content"],
       };
 
-      // חילוץ טקסט עם timeout של 60 שניות
+      // חילוץ טקסט עם timeout של 5 דקות
       const result = await withTimeout(
         extractDataFromUploadedFile({
           file_url,
           json_schema: schema,
         }),
-        60000
+        300000 // Increased from 60000
       );
 
       if (result.status === 'success' && result.output && typeof (result.output as any).text_content === 'string') {
