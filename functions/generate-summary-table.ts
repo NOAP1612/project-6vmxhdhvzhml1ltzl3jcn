@@ -14,29 +14,37 @@ Deno.serve(async (req) => {
 
     const prompt = language === 'hebrew'
       ? `צור טבלת סיכום בנושא "${topic}" עבור המושגים הבאים: ${conceptList}.
-עבור כל מושג, ספק סיכום קצר וברור וגם דוגמה קצרה (משפט אחד) הממחישה את המושג.
+עבור כל מושג, ספק:
+1. הגדרה קצרה וברורה
+2. הסבר מפורט יותר
+3. דוגמה קצרה (משפט אחד) הממחישה את המושג
 
 החזר את התשובה בפורמט JSON הבא:
 {
   "title": "סיכום בנושא: ${topic}",
-  "items": [
+  "summary": [
     {
       "concept": "שם המושג",
-      "summary": "סיכום קצר של המושג",
+      "definition": "הגדרה קצרה של המושג",
+      "explanation": "הסבר מפורט יותר של המושג",
       "example": "דוגמה קצרה הממחישה את המושג"
     }
   ]
 }`
       : `Create a summary table on the topic "${topic}" for the following concepts: ${conceptList}.
-For each concept, provide a clear, concise summary and a short example (one sentence) that illustrates the concept.
+For each concept, provide:
+1. A short, clear definition
+2. A more detailed explanation
+3. A short example (one sentence) that illustrates the concept
 
 Return the response in the following JSON format:
 {
   "title": "Summary on: ${topic}",
-  "items": [
+  "summary": [
     {
       "concept": "Concept Name",
-      "summary": "A brief summary of the concept",
+      "definition": "A brief definition of the concept",
+      "explanation": "A more detailed explanation of the concept",
       "example": "A short example illustrating the concept"
     }
   ]

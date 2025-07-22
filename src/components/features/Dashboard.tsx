@@ -1,4 +1,5 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { 
   Brain, 
   FileQuestion, 
@@ -8,126 +9,140 @@ import {
   CreditCard, 
   Calculator,
   Volume2,
-  Sparkles,
-  BookOpen,
-  Target
+  TrendingUp,
+  Users,
+  BookOpen
 } from "lucide-react";
 
 export function Dashboard() {
-  const features = [
+  const stats = [
     {
+      title: "שאלונים שנוצרו",
+      value: "24",
+      description: "השבוע",
       icon: FileQuestion,
-      title: "יצירת שאלון",
-      description: "צור שאלות מותאמות אישית לפי נושא, מספר שאלות וסוג השאלות",
-      color: "from-blue-500 to-cyan-500"
+      color: "text-blue-600"
     },
     {
+      title: "טבלאות סיכום",
+      value: "12",
+      description: "החודש",
       icon: Table,
-      title: "טבלת סיכום",
-      description: "קבל טבלה מסודרת עם הסברים פשוטים וברורים לכל מושג",
-      color: "from-green-500 to-emerald-500"
+      color: "text-green-600"
     },
     {
-      icon: Calendar,
-      title: "גאנט לימודים",
-      description: "תוכנית לימודים יומית מותאמת לקראת המבחן שלך",
-      color: "from-purple-500 to-violet-500"
-    },
-    {
-      icon: MessageSquare,
-      title: "פוסט לימודי",
-      description: "פוסטים קצרים ומעוצבים ללמידה ושיתוף ברשתות חברתיות",
-      color: "from-pink-500 to-rose-500"
-    },
-    {
-      icon: CreditCard,
       title: "כרטיסיות זיכרון",
-      description: "כרטיסיות ללמידה מהירה - שאלה בצד אחד, תשובה בצד שני",
-      color: "from-orange-500 to-amber-500"
+      value: "156",
+      description: "סה\"כ",
+      icon: CreditCard,
+      color: "text-purple-600"
     },
     {
-      icon: Calculator,
-      title: "דף נוסחאות",
-      description: "דף נוסחאות מסודר ומעוצב לכל תחום לימוד",
-      color: "from-teal-500 to-cyan-500"
-    },
-    {
-      icon: Volume2,
-      title: "קריאה בקול",
-      description: "המרת טקסטים להרצאה מוקלטת באיכות גבוהה",
-      color: "from-indigo-500 to-blue-500"
+      title: "שעות למידה",
+      value: "48",
+      description: "השבוע",
+      icon: BookOpen,
+      color: "text-orange-600"
     }
   ];
 
+  const recentActivities = [
+    { action: "נוצר שאלון בנושא מתמטיקה", time: "לפני 2 שעות" },
+    { action: "הושלמה טבלת סיכום בפיזיקה", time: "לפני 4 שעות" },
+    { action: "נוצרו כרטיסיות זיכרון בהיסטוריה", time: "אתמול" },
+    { action: "הושלם לוח זמנים לימודי", time: "לפני יומיים" }
+  ];
+
   return (
-    <div className="space-y-8 animate-fade-in">
-      {/* Header */}
-      <div className="text-center space-y-4">
-        <div className="flex items-center justify-center gap-3 mb-4">
-          <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
-            <Brain className="w-8 h-8 text-white" />
-          </div>
-          <div>
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              פלטפורמת למידה חכמה
-            </h1>
-            <p className="text-xl text-gray-600 mt-2">מופעלת על ידי בינה מלאכותית מתקדמת</p>
-          </div>
+    <div className="space-y-6 animate-fade-in">
+      <div className="flex items-center gap-3 mb-6">
+        <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
+          <Brain className="w-6 h-6 text-white" />
         </div>
-        
-        <div className="flex items-center justify-center gap-6 text-sm text-gray-500">
-          <div className="flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-yellow-500" />
-            <span>GPT-4 מתקדם</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <BookOpen className="w-4 h-4 text-blue-500" />
-            <span>תמיכה בעברית ואנגלית</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Target className="w-4 h-4 text-green-500" />
-            <span>למידה מותאמת אישית</span>
-          </div>
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">לוח בקרה</h1>
+          <p className="text-gray-600">ברוך הבא לפלטפורמת הלמידה החכמה</p>
         </div>
       </div>
 
-      {/* Features Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {features.map((feature, index) => (
-          <Card 
-            key={index} 
-            className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border-0 bg-white/70 backdrop-blur-sm"
-          >
-            <CardHeader className="pb-4">
-              <div className={`w-12 h-12 rounded-xl bg-gradient-to-r ${feature.color} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300`}>
-                <feature.icon className="w-6 h-6 text-white" />
+      {/* Statistics Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {stats.map((stat, index) => (
+          <Card key={index} className="hover:shadow-lg transition-shadow">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">{stat.title}</p>
+                  <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
+                  <p className="text-xs text-gray-500">{stat.description}</p>
+                </div>
+                <stat.icon className={`w-8 h-8 ${stat.color}`} />
               </div>
-              <CardTitle className="text-lg font-semibold text-gray-900">
-                {feature.title}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <CardDescription className="text-gray-600 leading-relaxed">
-                {feature.description}
-              </CardDescription>
             </CardContent>
           </Card>
         ))}
       </div>
 
-      {/* Info Section */}
-      <Card className="bg-gradient-to-r from-blue-50 to-purple-50 border-0">
-        <CardContent className="p-8">
-          <div className="text-center space-y-4">
-            <h3 className="text-2xl font-bold text-gray-900">איך זה עובד?</h3>
-            <p className="text-gray-700 max-w-3xl mx-auto leading-relaxed">
-              המערכת שלנו מבוססת על Assistant מתקדם של OpenAI עם GPT-4, המחובר ישירות ל־Dashboard שלך. 
-              כל כלי למידה מותאם אישית לצרכים שלך ומספק תוכן איכותי בעברית ובאנגלית. 
-              פשוט בחר את הכלי הרצוי, הזן את הפרטים, והמערכת תיצור עבורך תוכן לימודי מקצועי ומותאם.
-            </p>
-            <div className="flex items-center justify-center gap-2 text-sm text-gray-500 mt-6">
-              <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-              <span>מחובר ל־OpenAI</span>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Quick Actions */}
+        <Card>
+          <CardHeader>
+            <CardTitle>פעולות מהירות</CardTitle>
+            <CardDescription>התחל ליצור תוכן לימודי חדש</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <Button className="w-full justify-start" variant="outline">
+              <FileQuestion className="w-4 h-4 mr-2" />
+              צור שאלון חדש
+            </Button>
+            <Button className="w-full justify-start" variant="outline">
+              <Table className="w-4 h-4 mr-2" />
+              צור טבלת סיכום
+            </Button>
+            <Button className="w-full justify-start" variant="outline">
+              <CreditCard className="w-4 h-4 mr-2" />
+              צור כרטיסיות זיכרון
+            </Button>
+            <Button className="w-full justify-start" variant="outline">
+              <Calendar className="w-4 h-4 mr-2" />
+              תכנן לוח זמנים
+            </Button>
+          </CardContent>
+        </Card>
+
+        {/* Recent Activity */}
+        <Card>
+          <CardHeader>
+            <CardTitle>פעילות אחרונה</CardTitle>
+            <CardDescription>מה קרה לאחרונה בחשבון שלך</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {recentActivities.map((activity, index) => (
+                <div key={index} className="flex items-center gap-3 p-3 rounded-lg bg-gray-50">
+                  <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-gray-900">{activity.action}</p>
+                    <p className="text-xs text-gray-500">{activity.time}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Learning Progress */}
+      <Card>
+        <CardHeader>
+          <CardTitle>התקדמות השבוע</CardTitle>
+          <CardDescription>הסטטיסטיקות שלך בשבוע האחרון</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-center p-8 text-gray-500">
+            <div className="text-center">
+              <TrendingUp className="w-12 h-12 mx-auto mb-4 text-gray-400" />
+              <p>גרפי התקדמות יתווספו בקרוב</p>
             </div>
           </div>
         </CardContent>
