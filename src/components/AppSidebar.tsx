@@ -48,33 +48,34 @@ export function AppSidebar({ activeFeature, setActiveFeature }: AppSidebarProps)
         if (isMobile) toggleSidebar();
       }}
       className={cn(
-        "flex items-center p-2 rounded-lg transition-colors w-full text-right",
-        activeFeature === feature.id
-          ? "bg-blue-100 text-blue-700"
-          : "text-gray-600 hover:bg-gray-100"
+        "sidebar-item data-stream",
+        activeFeature === feature.id && "active"
       )}
     >
-      <feature.icon className="h-5 w-5 ml-3" />
-      <span>{feature.name}</span>
+      <feature.icon className="h-5 w-5 ml-3 floating-element" />
+      <span className="tech-text-glow">{feature.name}</span>
     </button>
   );
 
   const SidebarContent = ({ isMobile = false }: { isMobile?: boolean }) => (
-    <div className="flex flex-col h-full">
-      <div className="p-4 flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-800">EduGen</h1>
+    <div className="flex flex-col h-full glass-effect neural-network">
+      <div className="p-4 flex justify-between items-center tech-border-glow">
+        <h1 className="text-2xl font-bold gradient-text animate-gradient-shift">EduGen</h1>
         {isMobile && (
-          <button onClick={toggleSidebar} className="text-gray-500 hover:text-gray-800">
+          <button 
+            onClick={toggleSidebar} 
+            className="text-gray-500 hover:text-gray-800 tech-button p-2 rounded-lg"
+          >
             <X className="h-6 w-6" />
           </button>
         )}
       </div>
-      <nav className="flex-1 px-4 space-y-2">
-        <p className="px-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">כלים עיקריים</p>
+      <nav className="flex-1 px-4 space-y-2 stagger-animation">
+        <p className="px-2 text-xs font-semibold text-gray-500 uppercase tracking-wider tech-text-glow">כלים עיקריים</p>
         {mainFeatures.map((feature) => (
           <NavItem key={feature.id} feature={feature} isMobile={isMobile} />
         ))}
-        <p className="px-2 pt-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">כלים נוספים</p>
+        <p className="px-2 pt-4 text-xs font-semibold text-gray-500 uppercase tracking-wider tech-text-glow">כלים נוספים</p>
         {secondaryFeatures.map((feature) => (
           <NavItem key={feature.id} feature={feature} isMobile={isMobile} />
         ))}
@@ -85,25 +86,28 @@ export function AppSidebar({ activeFeature, setActiveFeature }: AppSidebarProps)
   return (
     <>
       {/* Desktop Sidebar */}
-      <aside className="hidden lg:block w-64 bg-white border-l border-gray-200 flex-shrink-0">
+      <aside className="hidden lg:block w-64 flex-shrink-0 animate-fade-in">
         <SidebarContent />
       </aside>
 
       {/* Mobile Sidebar */}
       <div className="lg:hidden">
-        <button onClick={toggleSidebar} className="fixed top-4 right-4 z-20 p-2 bg-white rounded-full shadow-md">
-          <Menu className="h-6 w-6 text-gray-700" />
+        <button 
+          onClick={toggleSidebar} 
+          className="fixed top-4 right-4 z-20 p-2 tech-button rounded-full tech-shadow animate-float"
+        >
+          <Menu className="h-6 w-6 text-white" />
         </button>
         <div
           className={cn(
-            "fixed inset-0 bg-black bg-opacity-50 z-30 transition-opacity",
+            "fixed inset-0 bg-black bg-opacity-50 z-30 transition-opacity backdrop-blur-sm",
             isOpen ? "opacity-100" : "opacity-0 pointer-events-none"
           )}
           onClick={toggleSidebar}
         />
         <div
           className={cn(
-            "fixed top-0 right-0 h-full w-64 bg-white z-40 shadow-lg transform transition-transform",
+            "fixed top-0 right-0 h-full w-64 z-40 shadow-lg transform transition-all duration-500 ease-out",
             isOpen ? "translate-x-0" : "translate-x-full"
           )}
         >
