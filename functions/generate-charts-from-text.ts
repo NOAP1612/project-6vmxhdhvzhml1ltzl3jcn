@@ -24,7 +24,7 @@ Deno.serve(async (req) => {
     }
 
     const prompt = `
-      Analyze the following text in Hebrew. Your goal is to create a "visual formula sheet" by extracting up to 5 key data points, concepts, or relationships that can be visualized.
+      Analyze the following text in Hebrew. Your goal is to create a "visual formula sheet" by extracting key data, concepts, and relationships that can be visualized.
 
       For each key insight, suggest a chart (e.g., bar, pie, line, area), provide a clear Hebrew title, and generate the corresponding data points. The data should be ready for plotting.
 
@@ -37,7 +37,7 @@ Deno.serve(async (req) => {
         "type": "bar",
         "data": [ { "name": "Category Name", "value": 123 } ]
       }
-      Ensure the generated data is directly from the text or a logical summary of it. Generate between 2 and 5 different charts if the text allows.
+      Ensure the generated data is directly from the text or a logical summary of it. Generate at least 2-3 different charts if the text allows.
     `;
 
     const response = await openai.chat.completions.create({
