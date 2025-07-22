@@ -1,95 +1,100 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { generateSummaryTable, extractConcepts } from "@/functions";
 import { uploadFile, extractDataFromUploadedFile } from "@/integrations/core";
 
 export interface SummaryItem {
-  concept: string;
-  definition: string;
-  explanation: string;
-  example?: string;
+// ... keep existing code
 }
 
 export interface SummaryData {
-  title: string;
-  summary: SummaryItem[];
+// ... keep existing code
 }
 
+const getInitialState = <T,>(key: string, defaultValue: T): T => {
+  if (typeof window === 'undefined') {
+    return defaultValue;
+  }
+  try {
+    const item = window.localStorage.getItem(key);
+    return item ? JSON.parse(item) : defaultValue;
+  } catch (error) {
+    console.warn(`Error reading localStorage key "${key}":`, error);
+    return defaultValue;
+  }
+};
+
 export const useSummaryTable = () => {
-  const [topic, setTopic] = useState('');
-  const [sourceText, setSourceText] = useState('');
-  const [concepts, setConcepts] = useState<string[]>(['']);
-  const [language, setLanguage] = useState('hebrew');
+  const [topic, setTopic] = useState<string>(() => getInitialState('summaryTable:topic', ''));
+  const [sourceText, setSourceText] = useState<string>(() => getInitialState('summaryTable:sourceText', ''));
+  const [concepts, setConcepts] = useState<string[]>(() => getInitialState('summaryTable:concepts', ['']));
+  const [language, setLanguage] = useState<string>(() => getInitialState('summaryTable:language', 'hebrew'));
+  const [fileName, setFileName] = useState<string>(() => getInitialState('summaryTable:fileName', ''));
+  const [summaryData, setSummaryData] = useState<SummaryData | null>(() => getInitialState('summaryTable:summaryData', null));
+  
   const [isLoading, setIsLoading] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [isExtractingConcepts, setIsExtractingConcepts] = useState(false);
   const [uploadProgress, setUploadProgress] = useState('');
-  const [fileName, setFileName] = useState('');
-  const [summaryData, setSummaryData] = useState<SummaryData | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
+  useEffect(() => {
+    try {
+      localStorage.setItem('summaryTable:topic', JSON.stringify(topic));
+      localStorage.setItem('summaryTable:sourceText', JSON.stringify(sourceText));
+      localStorage.setItem('summaryTable:concepts', JSON.stringify(concepts));
+      localStorage.setItem('summaryTable:language', JSON.stringify(language));
+      localStorage.setItem('summaryTable:fileName', JSON.stringify(fileName));
+      localStorage.setItem('summaryTable:summaryData', JSON.stringify(summaryData));
+    } catch (error) {
+      console.error("Failed to save state to localStorage", error);
+    }
+  }, [topic, sourceText, concepts, language, fileName, summaryData]);
+
+
   const withTimeout = async <T,>(promise: Promise<T>, timeoutMs: number): Promise<T> => {
-    const timeoutPromise = new Promise<never>((_, reject) => {
-      setTimeout(() => reject(new Error('Request timeout')), timeoutMs);
-    });
-    
-    return Promise.race([promise, timeoutPromise]);
+// ... keep existing code
   };
 
   const addConcept = () => {
-    setConcepts([...concepts, '']);
+// ... keep existing code
   };
 
   const removeConcept = (index: number) => {
-    if (concepts.length > 1) {
-      setConcepts(concepts.filter((_, i) => i !== index));
-    }
+// ... keep existing code
   };
 
   const updateConcept = (index: number, value: string) => {
-    const newConcepts = [...concepts];
-    newConcepts[index] = value;
-    setConcepts(newConcepts);
+// ... keep existing code
   };
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFile = event.target.files?.[0];
+// ... keep existing code
     if (!selectedFile) return;
 
     if (selectedFile.type !== 'application/pdf') {
-      toast({
-        title: "קובץ לא נתמך",
-        description: "אנא העלה קובץ PDF בלבד.",
-        variant: "destructive",
-      });
+// ... keep existing code
       return;
     }
 
-    setFileName(selectedFile.name);
-    setIsUploading(true);
+    // Clear previous state before upload
+    setTopic('');
     setSourceText('');
     setConcepts(['']);
     setSummaryData(null);
+    setFileName(selectedFile.name);
+    setIsUploading(true);
     setUploadProgress('מעלה קובץ...');
 
     try {
-      toast({
-        title: "מעלה קובץ...",
-        description: "שלב 1 מתוך 2: מעלה את הקובץ לשרת.",
-      });
-
+// ... keep existing code
       const { file_url } = await withTimeout(
         uploadFile({ file: selectedFile }), 
         120000
       );
 
-      setUploadProgress('מעבד את הקובץ...');
-      toast({
-        title: "מעבד את הקובץ...",
-        description: "שלב 2 מתוך 2: מחלץ טקסט מהקובץ.",
-      });
-
+// ... keep existing code
       const schema = {
         type: "object",
         properties: {
@@ -102,35 +107,16 @@ export const useSummaryTable = () => {
       };
 
       const result = await withTimeout(
-        extractDataFromUploadedFile({
-          file_url,
-          json_schema: schema,
-        }),
-        300000
+// ... keep existing code
       );
 
       if (result.status === 'success' && result.output && typeof (result.output as any).text_content === 'string') {
-        const content = (result.output as { text_content: string }).text_content;
-        setSourceText(content);
-        setUploadProgress('הושלם בהצלחה!');
-        toast({
-          title: "הצלחה!",
-          description: "הטקסט מהקובץ חולץ בהצלחה. כעת תוכל לחלץ מושגים אוטומטית.",
-        });
+// ... keep existing code
       } else {
         throw new Error(result.details || "Failed to extract text from PDF.");
       }
     } catch (error) {
-      console.error("Error processing file:", error);
-      let description = "לא הצלחנו לחלץ את הטקסט מהקובץ. אנא ודא שהקובץ תקין ונסה שוב.";
-      
-      if (error instanceof Error) {
-        if (error.message === 'Request timeout') {
-          description = "הבקשה ארכה יותר מדי זמן. אנא נסה שוב עם קובץ קטן יותר.";
-        } else if (error.message === 'Failed to fetch') {
-          description = "אירעה שגיאת רשת. אנא בדוק את חיבור האינטרנט ונסה שוב.";
-        }
-      }
+// ... keep existing code
       
       toast({
         title: "שגיאה בעיבוד הקובץ",
@@ -140,10 +126,7 @@ export const useSummaryTable = () => {
       setFileName('');
       setUploadProgress('');
     } finally {
-      setIsUploading(false);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
+// ... keep existing code
     }
   };
 
@@ -154,103 +137,33 @@ export const useSummaryTable = () => {
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
+    localStorage.removeItem('summaryTable:fileName');
+    localStorage.removeItem('summaryTable:sourceText');
+  };
+
+  const handleResetAll = () => {
+    setTopic('');
+    setSourceText('');
+    setConcepts(['']);
+    setLanguage('hebrew');
+    setFileName('');
+    setSummaryData(null);
+    setUploadProgress('');
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+    toast({
+      title: "הכל נוקה",
+      description: "כל הנתונים והטבלה שנוצרה נמחקו.",
+    });
   };
 
   const handleExtractConcepts = async () => {
-    const textToAnalyze = sourceText || topic;
-    
-    if (!textToAnalyze.trim()) {
-      toast({
-        title: "שגיאה",
-        description: "אנא הזן טקסט או העלה קובץ כדי לחלץ מושגים",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (!topic.trim()) {
-      toast({
-        title: "שגיאה",
-        description: "אנא הזן נושא לטבלה",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setIsExtractingConcepts(true);
-    try {
-      const result = await extractConcepts({
-        text: textToAnalyze,
-        topic: topic,
-        language: language
-      });
-
-      if (result.concepts && Array.isArray(result.concepts)) {
-        setConcepts(result.concepts);
-        toast({
-          title: "הצלחה!",
-          description: `חולצו ${result.concepts.length} מושגים מהטקסט`,
-        });
-      } else {
-        throw new Error("לא הצלחנו לחלץ מושגים מהטקסט");
-      }
-    } catch (error) {
-      console.error("Error extracting concepts:", error);
-      toast({
-        title: "שגיאה",
-        description: "אירעה שגיאה בחילוץ המושגים. אנא נסה שוב.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsExtractingConcepts(false);
-    }
+// ... keep existing code
   };
 
   const handleGenerate = async () => {
-    const validConcepts = concepts.filter(c => c.trim());
-    
-    if (!topic.trim()) {
-      toast({
-        title: "שגיאה",
-        description: "אנא הזן נושא לטבלה",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (validConcepts.length === 0) {
-      toast({
-        title: "שגיאה",
-        description: "אנא הזן לפחות מושג אחד",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setIsLoading(true);
-    try {
-      const result = await generateSummaryTable({
-        topic,
-        concepts: validConcepts,
-        language
-      });
-
-      if (result.summary) {
-        setSummaryData(result);
-        toast({
-          title: "הצלחה!",
-          description: `נוצרה טבלת סיכום עם ${result.summary.length} מושגים`,
-        });
-      }
-    } catch (error) {
-      toast({
-        title: "שגיאה",
-        description: "אירעה שגיאה ביצירת הטבלה. אנא נסה שוב.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
+// ... keep existing code
   };
 
   return {
@@ -275,5 +188,6 @@ export const useSummaryTable = () => {
     handleClearFile,
     handleExtractConcepts,
     handleGenerate,
+    handleResetAll,
   };
 };
