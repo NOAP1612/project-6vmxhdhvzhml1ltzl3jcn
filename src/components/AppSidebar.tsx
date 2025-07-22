@@ -11,6 +11,7 @@ import {
   Presentation,
   Menu,
   X,
+  BookText,
 } from "lucide-react";
 import { useSidebar } from "./ui/sidebar";
 import { cn } from "@/lib/utils";
@@ -22,6 +23,7 @@ interface AppSidebarProps {
 
 const mainFeatures = [
   { name: "לוח בקרה", icon: LayoutDashboard, id: "dashboard" },
+  { name: "עורך ביבליוגרפיה", icon: BookText, id: "bibliography" },
   { name: "יצירת מבחן", icon: FileQuestion, id: "quiz" },
   { name: "טבלת סיכום", icon: Table, id: "summary" },
   { name: "יצירת פוסט לימודי", icon: PenSquare, id: "post" },

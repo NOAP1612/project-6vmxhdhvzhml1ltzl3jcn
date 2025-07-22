@@ -8,6 +8,7 @@ import { FormulaSheet } from "./features/FormulaSheet";
 import { TextToSpeech } from "./features/TextToSpeech";
 import { ChartGenerator } from "./features/ChartGenerator";
 import { PresentationGenerator } from "./features/PresentationGenerator";
+import { BibliographyHelper } from "./features/BibliographyHelper";
 
 interface MainContentProps {
   activeFeature: string;
@@ -18,6 +19,8 @@ export function MainContent({ activeFeature }: MainContentProps) {
     switch (activeFeature) {
       case 'dashboard':
         return <Dashboard />;
+      case 'bibliography':
+        return <BibliographyHelper />;
       case 'quiz':
         return <QuizGenerator />;
       case 'summary':
