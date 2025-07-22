@@ -8,6 +8,7 @@ import { Upload, X, Loader2 } from "lucide-react";
 const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884d8", "#82ca9d"];
 
 const renderChart = (chart: ChartData) => {
+// ... keep existing code
   switch (chart.type) {
     case "bar":
       return (
@@ -68,6 +69,7 @@ const renderChart = (chart: ChartData) => {
 };
 
 export function ChartGenerator() {
+// ... keep existing code
   const {
     sourceText, setSourceText,
     fileName,
