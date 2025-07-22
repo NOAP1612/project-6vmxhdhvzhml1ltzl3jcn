@@ -5,6 +5,8 @@ import { FileQuestion, Loader2 } from "lucide-react";
 import { useQuizGenerator } from "@/hooks/useQuizGenerator";
 import { FileUpload } from "./FileUpload";
 import { QuizDisplay } from "./QuizDisplay";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
 
 export function QuizGenerator() {
   const {
@@ -15,6 +17,8 @@ export function QuizGenerator() {
     quizData,
     userAnswers,
     isSubmitted,
+    questionCount,
+    setQuestionCount,
     fileInputRef,
     handleFileChange,
     handleGenerateQuiz,
@@ -44,8 +48,9 @@ export function QuizGenerator() {
     );
   }
 
+  const questionAmountOptions = [...Array.from({ length: 11 }, (_, i) => i + 5), 20];
+
   return (
-    // ... keep existing code (return statement for the form)
     <div className="space-y-6 max-w-3xl mx-auto animate-fade-in">
       <div className="text-center">
         <div className="inline-block p-3 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-xl">
@@ -88,6 +93,27 @@ export function QuizGenerator() {
             className="h-48"
             disabled={isUploading || !!fileName}
           />
+
+          <div className="space-y-2">
+            <Label htmlFor="question-amount">מספר שאלות</Label>
+            <Select
+              value={String(questionCount)}
+              onValueChange={(value) => setQuestionCount(Number(value))}
+              disabled={isLoading}
+              dir="rtl"
+            >
+              <SelectTrigger id="question-amount">
+                <SelectValue placeholder="בחר מספר שאלות" />
+              </SelectTrigger>
+              <SelectContent>
+                {questionAmountOptions.map((amount) => (
+                  <SelectItem key={amount} value={String(amount)}>
+                    {amount} שאלות
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
           <Button 
             onClick={handleGenerateQuiz} 

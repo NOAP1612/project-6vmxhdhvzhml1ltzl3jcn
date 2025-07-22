@@ -28,6 +28,7 @@ export const useQuizGenerator = () => {
   const [quizData, setQuizData] = useState<QuizData | null>(null);
   const [userAnswers, setUserAnswers] = useState<Record<number, string>>({});
   const [isSubmitted, setIsSubmitted] = useState(false); // This will now represent if the whole quiz is "finished"
+  const [questionCount, setQuestionCount] = useState(10);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
@@ -79,9 +80,17 @@ export const useQuizGenerator = () => {
     }
   };
 
-  // ... keep existing code (handleGenerateQuiz function)
   const handleGenerateQuiz = async () => {
-// ... keep existing code (function start)
+    if (!sourceText.trim()) {
+      toast({
+        title: "אין טקסט",
+        description: "אנא הדבק טקסט או העלה קובץ כדי ליצור שאלון.",
+        variant: "destructive",
+      });
+      return;
+    }
+    setIsLoading(true);
+    setQuizData(null);
 
     try {
       const quizSchema = {
@@ -106,7 +115,7 @@ export const useQuizGenerator = () => {
       };
 
       const result = await invokeLLM({
-        prompt: `צור שאלון אינטראקטיבי המבוסס על הטקסט הבא. השאלון צריך לכלול 5-10 שאלות אמריקאיות עם 4 אפשרויות כל אחת. ודא שהשאלות מכסות את הנושאים המרכזיים בטקסט. עבור כל שאלה, ספק הסבר קצר לתשובה הנכונה. חשוב מאוד: ודא שכל שאלה מנוסחת כהלכה ומסתיימת בסימן שאלה בסוף המשפט (לדוגמה: 'מהי בירת צרפת?'). הטקסט: """${sourceText}"""`,
+        prompt: `צור שאלון אינטראקטיבי המבוסס על הטקסט הבא. השאלון צריך לכלול ${questionCount} שאלות אמריקאיות עם 4 אפשרויות כל אחת. ודא שהשאלות מכסות את הנושאים המרכזיים בטקסט. עבור כל שאלה, ספק הסבר קצר לתשובה הנכונה. חשוב מאוד: ודא שכל שאלה מנוסחת כהלכה ומסתיימת בסימן שאלה בסוף המשפט (לדוגמה: 'מהי בירת צרפת?'). הטקסט: """${sourceText}"""`,
         response_json_schema: quizSchema,
       });
 
@@ -164,7 +173,6 @@ export const useQuizGenerator = () => {
   };
 
   return {
-// ... keep existing code (return statement)
     sourceText, setSourceText,
     fileName,
     isUploading,
@@ -173,6 +181,8 @@ export const useQuizGenerator = () => {
     quizData,
     userAnswers,
     isSubmitted,
+    questionCount,
+    setQuestionCount,
     fileInputRef,
     handleFileChange,
     handleGenerateQuiz,
