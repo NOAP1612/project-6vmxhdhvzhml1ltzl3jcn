@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { FileQuestion, Loader2, CheckCircle, Upload, X } from "lucide-react";
+import { FileQuestion, Loader2, CheckCircle, Upload, X, Clock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { createQuizQuestions } from "@/functions";
 import { uploadFile, extractDataFromUploadedFile } from "@/integrations/core";
@@ -27,9 +27,19 @@ export function QuizGenerator() {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [showAnswers, setShowAnswers] = useState<boolean[]>([]);
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState('');
   const [fileName, setFileName] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+
+  // פונקציה עם timeout משופר
+  const withTimeout = async <T,>(promise: Promise<T>, timeoutMs: number): Promise<T> => {
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      setTimeout(() => reject(new Error('Request timeout')), timeoutMs);
+    });
+    
+    return Promise.race([promise, timeoutPromise]);
+  };
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = event.target.files?.[0];
@@ -48,14 +58,21 @@ export function QuizGenerator() {
     setIsUploading(true);
     setTopic('');
     setQuestions([]);
+    setUploadProgress('מעלה קובץ...');
 
     try {
       toast({
         title: "מעלה קובץ...",
         description: "שלב 1 מתוך 2: מעלה את הקובץ לשרת.",
       });
-      const { file_url } = await uploadFile({ file: selectedFile });
 
+      // העלאת קובץ עם timeout של 30 שניות
+      const { file_url } = await withTimeout(
+        uploadFile({ file: selectedFile }), 
+        30000
+      );
+
+      setUploadProgress('מעבד את הקובץ...');
       toast({
         title: "מעבד את הקובץ...",
         description: "שלב 2 מתוך 2: מחלץ טקסט מהקובץ. זה עשוי לקחת מספר רגעים...",
@@ -72,14 +89,19 @@ export function QuizGenerator() {
         required: ["text_content"],
       };
 
-      const result = await extractDataFromUploadedFile({
-        file_url,
-        json_schema: schema,
-      });
+      // חילוץ טקסט עם timeout של 60 שניות
+      const result = await withTimeout(
+        extractDataFromUploadedFile({
+          file_url,
+          json_schema: schema,
+        }),
+        60000
+      );
 
       if (result.status === 'success' && result.output && typeof (result.output as any).text_content === 'string') {
         const content = (result.output as { text_content: string }).text_content;
         setTopic(content);
+        setUploadProgress('הושלם בהצלחה!');
         toast({
           title: "הצלחה!",
           description: "הטקסט מהקובץ חולץ בהצלחה ומוכן ליצירת שאלון.",
@@ -90,10 +112,15 @@ export function QuizGenerator() {
     } catch (error) {
       console.error("Error processing file:", error);
       let description = "לא הצלחנו לחלץ את הטקסט מהקובץ. אנא ודא שהקובץ תקין ונסה שוב.";
-      if (error instanceof TypeError && error.message === 'Failed to fetch') {
-        description = "אירעה שגיאת רשת בעת עיבוד הקובץ. אנא בדוק את חיבור האינטרנט שלך ונסה שוב. אם הבעיה נמשכת, ייתכן שיש בעיה זמנית בשרת.";
-      } else if (error instanceof Error) {
-        description = `אירעה שגיאה: ${error.message}`;
+      
+      if (error instanceof Error) {
+        if (error.message === 'Request timeout') {
+          description = "הבקשה ארכה יותר מדי זמן. אנא נסה שוב עם קובץ קטן יותר או בדוק את חיבור האינטרנט שלך.";
+        } else if (error.message === 'Failed to fetch') {
+          description = "אירעה שגיאת רשת בעת עיבוד הקובץ. אנא בדוק את חיבור האינטרנט שלך ונסה שוב. אם הבעיה נמשכת, ייתכן שיש בעיה זמנית בשרת.";
+        } else {
+          description = `אירעה שגיאה: ${error.message}`;
+        }
       }
       
       toast({
@@ -102,6 +129,7 @@ export function QuizGenerator() {
         variant: "destructive",
       });
       setFileName('');
+      setUploadProgress('');
     } finally {
       setIsUploading(false);
       if (fileInputRef.current) {
@@ -113,6 +141,7 @@ export function QuizGenerator() {
   const handleClearFile = () => {
     setFileName('');
     setTopic('');
+    setUploadProgress('');
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -189,8 +218,17 @@ export function QuizGenerator() {
                 htmlFor="pdf-upload"
                 className={`flex-grow flex items-center justify-center gap-2 cursor-pointer rounded-md border-2 border-dashed p-4 text-center text-gray-500 transition-colors hover:border-blue-500 hover:bg-blue-50 ${isUploading ? 'cursor-not-allowed bg-gray-100' : 'border-gray-300'}`}
               >
-                <Upload className="w-5 h-5" />
-                <span>{isUploading ? 'מעבד קובץ...' : (fileName || 'לחץ לבחירת קובץ PDF')}</span>
+                {isUploading ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    <span>{uploadProgress}</span>
+                  </>
+                ) : (
+                  <>
+                    <Upload className="w-5 h-5" />
+                    <span>{fileName || 'לחץ לבחירת קובץ PDF'}</span>
+                  </>
+                )}
               </Label>
               <Input
                 id="pdf-upload"
@@ -207,6 +245,26 @@ export function QuizGenerator() {
                 </Button>
               )}
             </div>
+            
+            {/* כפתור טעינה נפרד */}
+            {isUploading && (
+              <div className="flex items-center justify-center p-4 bg-blue-50 rounded-lg border border-blue-200">
+                <div className="flex items-center gap-3">
+                  <div className="relative">
+                    <Loader2 className="w-6 h-6 animate-spin text-blue-600" />
+                    <div className="absolute inset-0 rounded-full border-2 border-blue-200 animate-pulse"></div>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-blue-800 font-medium">{uploadProgress}</p>
+                    <p className="text-blue-600 text-sm flex items-center gap-1">
+                      <Clock className="w-3 h-3" />
+                      אנא המתן, זה עשוי לקחת מספר רגעים...
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+            
             <p className="text-xs text-gray-500">אין מגבלת עמודים. תומך בעברית ובאנגלית.</p>
           </div>
 
