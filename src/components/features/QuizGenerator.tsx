@@ -279,7 +279,7 @@ export function QuizGenerator() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2 md:col-span-2">
-              <Label htmlFor="topic">נושא השאלון (או הטקסט שחולץ)</Label>
+              <Label htmlFor="topic">נושא השאלון - הדבקת טקסט (מהיר יותר)</Label>
               <Textarea
                 id="topic"
                 placeholder="לדוגמה: היסטוריה של ישראל, או הדבק טקסט כאן"
