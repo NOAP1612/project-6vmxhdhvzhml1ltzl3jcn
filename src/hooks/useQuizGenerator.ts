@@ -20,7 +20,6 @@ export interface QuizData {
 }
 
 export const useQuizGenerator = () => {
-// ... keep existing code (state declarations)
   const [sourceText, setSourceText] = useState('');
   const [fileName, setFileName] = useState('');
   const [isUploading, setIsUploading] = useState(false);
@@ -33,14 +32,7 @@ export const useQuizGenerator = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
-  const withTimeout = async <T,>(promise: Promise<T>, timeoutMs: number): Promise<T> => {
-    const timeoutPromise = new Promise<never>((_, reject) => {
-      setTimeout(() => reject(new Error('Request timeout')), timeoutMs);
-    });
-    
-    return Promise.race([promise, timeoutPromise]);
-  };
-
+  // ... keep existing code (handleFileChange function)
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = event.target.files?.[0];
     if (!selectedFile) return;
@@ -61,17 +53,8 @@ export const useQuizGenerator = () => {
     setUploadProgress('מעלה קובץ...');
 
     try {
-       toast({
-        title: "מעלה קובץ...",
-        description: "שלב 1 מתוך 2: מעלה את הקובץ לשרת.",
-      });
-      const { file_url } = await withTimeout(uploadFile({ file: selectedFile }), 120000);
-      
+      const { file_url } = await uploadFile({ file: selectedFile });
       setUploadProgress('מעבד את הקובץ...');
-      toast({
-        title: "מעבד את הקובץ...",
-        description: "שלב 2 מתוך 2: מחלץ טקסט מהקובץ.",
-      });
       
       const schema = {
         type: "object",
@@ -79,7 +62,7 @@ export const useQuizGenerator = () => {
         required: ["text_content"],
       };
 
-      const result = await withTimeout(extractDataFromUploadedFile({ file_url, json_schema: schema }), 300000);
+      const result = await extractDataFromUploadedFile({ file_url, json_schema: schema });
 
       if (result.status === 'success' && result.output && typeof (result.output as any).text_content === 'string') {
         setSourceText((result.output as any).text_content);
@@ -89,23 +72,8 @@ export const useQuizGenerator = () => {
       }
     } catch (error) {
       console.error("Error processing file:", error);
-      let description = "לא הצלחנו לחלץ את הטקסט מהקובץ. אנא ודא שהקובץ תקין ונסה שוב.";
-      
-      if (error instanceof Error) {
-        if (error.message === 'Request timeout') {
-          description = "הבקשה ארכה יותר מדי זמן. אנא נסה שוב עם קובץ קטן יותר.";
-        } else if (error.message === 'Failed to fetch') {
-          description = "אירעה שגיאת רשת. אנא בדוק את חיבור האינטרנט ונסה שוב.";
-        }
-      }
-      
-      toast({
-        title: "שגיאה בעיבוד הקובץ",
-        description: description,
-        variant: "destructive",
-      });
+      toast({ title: "שגיאה בעיבוד הקובץ", description: "לא הצלחנו לחלץ את הטקסט מהקובץ.", variant: "destructive" });
       setFileName('');
-      setUploadProgress('');
     } finally {
       setIsUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
@@ -113,7 +81,6 @@ export const useQuizGenerator = () => {
   };
 
   const handleGenerateQuiz = async () => {
-// ... keep existing code (handleGenerateQuiz function)
     if (!sourceText.trim()) {
       toast({
         title: "אין טקסט",
@@ -155,12 +122,7 @@ export const useQuizGenerator = () => {
       setQuizData(result as QuizData);
       toast({ title: "הצלחה!", description: "השאלון נוצר בהצלחה." });
     } catch (error) {
-      console.error("Error generating quiz:", error);
-      toast({
-        title: "שגיאה ביצירת השאלון",
-        description: "לא הצלחנו ליצור את השאלון. אנא נסה שוב.",
-        variant: "destructive",
-      });
+// ... keep existing code (catch block)
     } finally {
       setIsLoading(false);
     }
@@ -211,7 +173,6 @@ export const useQuizGenerator = () => {
   };
 
   return {
-// ... keep existing code (return statement)
     sourceText, setSourceText,
     fileName,
     isUploading,
