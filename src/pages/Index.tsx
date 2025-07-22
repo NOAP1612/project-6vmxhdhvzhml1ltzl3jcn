@@ -15,9 +15,7 @@ const Index = () => {
           <AppSidebar activeFeature={activeFeature} setActiveFeature={setActiveFeature} />
           <MainContent activeFeature={activeFeature}>
             {activeFeature === 'bibliography' && (
-              <div className="p-4">
-                <BibliographyHelper />
-              </div>
+              <BibliographyHelper />
             )}
           </MainContent>
         </div>
