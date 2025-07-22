@@ -7,6 +7,7 @@ import { CheckCircle, XCircle, RotateCw, Lightbulb } from "lucide-react";
 import type { QuizData } from "@/hooks/useQuizGenerator";
 
 interface QuizDisplayProps {
+// ... keep existing code (interface definition)
   quizData: QuizData;
   userAnswers: Record<number, string>;
   isSubmitted: boolean;
@@ -16,6 +17,7 @@ interface QuizDisplayProps {
 }
 
 const getOptionClassName = (
+// ... keep existing code (function implementation)
   option: string,
   q: QuizData['questions'][0]
 ) => {
@@ -29,6 +31,7 @@ const getOptionClassName = (
 };
 
 export function QuizDisplay({
+// ... keep existing code (function signature)
   quizData,
   userAnswers,
   isSubmitted,
@@ -42,6 +45,7 @@ export function QuizDisplay({
   return (
     <Card className="animate-fade-in" dir="rtl">
       <CardHeader>
+// ... keep existing code (CardHeader content)
         <div className="flex justify-between items-start">
           <div>
             <CardTitle className="text-2xl">{quizData.title}</CardTitle>
@@ -67,7 +71,7 @@ export function QuizDisplay({
                     <div className="h-5 w-5 bg-gray-200 rounded-full flex items-center justify-center text-xs font-bold text-gray-600 mt-1">{index + 1}</div>
                 )}
                 <div className="mr-4 w-full">
-                    <AlertTitle className="font-bold text-lg mb-4">{q.question}</AlertTitle>
+                    <AlertTitle className="font-bold text-lg mb-4 text-right">{q.question}</AlertTitle>
                     <AlertDescription>
                     <RadioGroup
                         value={userAnswers[index] || ""}
@@ -78,7 +82,7 @@ export function QuizDisplay({
                         {q.options.map((option, i) => (
                         <div key={i} className={`flex items-center space-x-2 rounded-md border p-3 transition-all ${getOptionClassName(option, q)}`}>
                             <RadioGroupItem value={option} id={`q${index}-o${i}`} className="ml-2" />
-                            <Label htmlFor={`q${index}-o${i}`} className="flex-1 cursor-pointer">{option}</Label>
+                            <Label htmlFor={`q${index}-o${i}`} className="flex-1 cursor-pointer text-right">{option}</Label>
                         </div>
                         ))}
                     </RadioGroup>
@@ -88,7 +92,7 @@ export function QuizDisplay({
                         </Button>
                     )}
                     {q.isChecked && (
-                        <div className="mt-4 p-3 bg-gray-50 rounded-md border text-sm">
+                        <div className="mt-4 p-3 bg-gray-50 rounded-md border text-sm text-right">
                             <p className="flex items-center font-semibold"><Lightbulb className="w-4 h-4 ml-2 text-yellow-500" /> הסבר:</p>
                             <p className="mt-1">{q.explanation}</p>
                         </div>
