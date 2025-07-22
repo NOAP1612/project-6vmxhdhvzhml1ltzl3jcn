@@ -30,6 +30,11 @@ const getOptionClassName = (
   return "text-gray-600";
 };
 
+const formatQuestion = (question: string) => {
+  const cleanedQuestion = question.trim().replace(/\?$/g, '');
+  return `${cleanedQuestion}?`;
+};
+
 export function QuizDisplay({
 // ... keep existing code (function signature)
   quizData,
@@ -46,20 +51,6 @@ export function QuizDisplay({
     <Card className="animate-fade-in" dir="rtl">
       <CardHeader>
 // ... keep existing code (CardHeader content)
-        <div className="flex justify-between items-start">
-          <div>
-            <CardTitle className="text-2xl">{quizData.title}</CardTitle>
-            {allQuestionsChecked && (
-              <p className="text-lg font-bold mt-2 text-blue-600">
-                הציון הסופי שלך: {score} / {quizData.questions.length}
-              </p>
-            )}
-          </div>
-          <Button onClick={onReset} variant="outline">
-            <RotateCw className="w-4 h-4 ml-2" />
-            התחל מחדש
-          </Button>
-        </div>
       </CardHeader>
       <CardContent className="space-y-6">
         {quizData.questions.map((q, index) => (
@@ -71,13 +62,10 @@ export function QuizDisplay({
                     <div className="h-5 w-5 bg-gray-200 rounded-full flex items-center justify-center text-xs font-bold text-gray-600 mt-1">{index + 1}</div>
                 )}
                 <div className="mr-4 w-full">
-                    <AlertTitle className="font-bold text-lg mb-4 text-right">{q.question}</AlertTitle>
+                    <AlertTitle className="font-bold text-lg mb-4 text-right">{formatQuestion(q.question)}</AlertTitle>
                     <AlertDescription>
                     <RadioGroup
-                        value={userAnswers[index] || ""}
-                        onValueChange={(value) => onAnswerChange(index, value)}
-                        disabled={q.isChecked}
-                        className="space-y-3"
+// ... keep existing code (RadioGroup props)
                     >
                         {q.options.map((option, i) => (
                         <div key={i} className={`flex items-center space-x-2 rounded-md border p-3 transition-all ${getOptionClassName(option, q)}`}>
@@ -87,15 +75,10 @@ export function QuizDisplay({
                         ))}
                     </RadioGroup>
                     {!q.isChecked && (
-                        <Button onClick={() => onCheckAnswer(index)} disabled={!userAnswers[index]} className="mt-4">
-                            בדוק תשובה
-                        </Button>
+// ... keep existing code (check answer button)
                     )}
                     {q.isChecked && (
-                        <div className="mt-4 p-3 bg-gray-50 rounded-md border text-sm text-right">
-                            <p className="flex items-center font-semibold"><Lightbulb className="w-4 h-4 ml-2 text-yellow-500" /> הסבר:</p>
-                            <p className="mt-1">{q.explanation}</p>
-                        </div>
+// ... keep existing code (explanation block)
                     )}
                     </AlertDescription>
                 </div>

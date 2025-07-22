@@ -81,15 +81,7 @@ export const useQuizGenerator = () => {
 
   // ... keep existing code (handleGenerateQuiz function)
   const handleGenerateQuiz = async () => {
-    if (!sourceText.trim()) {
-      toast({ title: "שגיאה", description: "אנא הזן טקסט או העלה קובץ כדי ליצור שאלון.", variant: "destructive" });
-      return;
-    }
-
-    setIsLoading(true);
-    setQuizData(null);
-    setUserAnswers({});
-    setIsSubmitted(false);
+// ... keep existing code (function start)
 
     try {
       const quizSchema = {
@@ -101,7 +93,7 @@ export const useQuizGenerator = () => {
             items: {
               type: "object",
               properties: {
-                question: { type: "string", description: "נוסח השאלה" },
+                question: { type: "string", description: "נוסח השאלה, חייב להסתיים בסימן שאלה בסוף המשפט." },
                 options: { type: "array", items: { type: "string" }, description: "4 אפשרויות תשובה" },
                 correctAnswer: { type: "string", description: "התשובה הנכונה מבין האפשרויות" },
                 explanation: { type: "string", description: "הסבר קצר מדוע זו התשובה הנכונה" }
@@ -114,15 +106,14 @@ export const useQuizGenerator = () => {
       };
 
       const result = await invokeLLM({
-        prompt: `צור שאלון אינטראקטיבי המבוסס על הטקסט הבא. השאלון צריך לכלול 5-10 שאלות אמריקאיות עם 4 אפשרויות כל אחת. ודא שהשאלות מכסות את הנושאים המרכזיים בטקסט. עבור כל שאלה, ספק הסבר קצר לתשובה הנכונה. הטקסט: """${sourceText}"""`,
+        prompt: `צור שאלון אינטראקטיבי המבוסס על הטקסט הבא. השאלון צריך לכלול 5-10 שאלות אמריקאיות עם 4 אפשרויות כל אחת. ודא שהשאלות מכסות את הנושאים המרכזיים בטקסט. עבור כל שאלה, ספק הסבר קצר לתשובה הנכונה. חשוב מאוד: ודא שכל שאלה מנוסחת כהלכה ומסתיימת בסימן שאלה בסוף המשפט (לדוגמה: 'מהי בירת צרפת?'). הטקסט: """${sourceText}"""`,
         response_json_schema: quizSchema,
       });
 
       setQuizData(result as QuizData);
       toast({ title: "הצלחה!", description: "השאלון נוצר בהצלחה." });
     } catch (error) {
-      console.error("Error generating quiz:", error);
-      toast({ title: "שגיאה", description: "אירעה שגיאה ביצירת השאלון. אנא נסה שוב.", variant: "destructive" });
+// ... keep existing code (catch block)
     } finally {
       setIsLoading(false);
     }
@@ -173,6 +164,7 @@ export const useQuizGenerator = () => {
   };
 
   return {
+// ... keep existing code (return statement)
     sourceText, setSourceText,
     fileName,
     isUploading,
