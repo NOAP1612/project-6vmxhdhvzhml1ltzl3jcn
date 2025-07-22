@@ -3,7 +3,10 @@ import { useChartGenerator, ChartData } from "@/hooks/useChartGenerator";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Upload, X, Loader2 } from "lucide-react";
+import { Upload, X, Loader2, Download } from "lucide-react";
+import { downloadChartAsPNG } from "@/utils/chartDownload";
+import { useToast } from "@/hooks/use-toast";
+import { useRef } from "react";
 
 const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884d8", "#82ca9d"];
 
@@ -81,6 +84,35 @@ export function ChartGenerator() {
     handleReset,
   } = useChartGenerator();
 
+  const { toast } = useToast();
+  const chartRefs = useRef<(HTMLDivElement | null)[]>([]);
+
+  const handleDownloadChart = async (chartIndex: number, chartTitle: string) => {
+    const chartElement = chartRefs.current[chartIndex];
+    if (!chartElement) {
+      toast({
+        title: "שגיאה",
+        description: "לא ניתן למצוא את הגרף להורדה",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const success = await downloadChartAsPNG(chartElement, chartTitle);
+    if (success) {
+      toast({
+        title: "הצלחה!",
+        description: "הגרף הורד בהצלחה",
+      });
+    } else {
+      toast({
+        title: "שגיאה",
+        description: "אירעה שגיאה בהורדת הגרף",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <div className="space-y-6">
       <Card>
@@ -133,11 +165,23 @@ export function ChartGenerator() {
         <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2">
           {chartsData.charts.map((chart, index) => (
             <Card key={index} className="w-full">
-              <CardHeader>
-                <CardTitle className="text-center">{chart.title}</CardTitle>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-center flex-1">{chart.title}</CardTitle>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleDownloadChart(index, chart.title)}
+                  className="ml-2"
+                >
+                  <Download className="h-4 w-4 ml-1" />
+                  הורד PNG
+                </Button>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="w-full">
+                <div 
+                  className="w-full"
+                  ref={(el) => (chartRefs.current[index] = el)}
+                >
                   {renderChart(chart)}
                 </div>
                 {chart.explanation && (
