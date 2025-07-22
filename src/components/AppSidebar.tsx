@@ -1,130 +1,113 @@
 import {
-  Sidebar,
-  SidebarContent,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarHeader,
-  SidebarFooter,
-} from "@/components/ui/sidebar";
-import { 
-  Brain, 
-  FileQuestion, 
-  Table, 
-  Calendar, 
-  MessageSquare, 
-  CreditCard, 
-  Calculator,
+  LayoutDashboard,
+  FileQuestion,
+  Table,
+  Calendar,
+  PenSquare,
+  Layers,
+  Sigma,
   Volume2,
-  Home,
-  Settings,
-  BarChart3
+  BarChart3,
+  Presentation,
+  Menu,
+  X,
 } from "lucide-react";
+import { useSidebar } from "./ui/sidebar";
+import { cn } from "@/lib/utils";
 
 interface AppSidebarProps {
   activeFeature: string;
   setActiveFeature: (feature: string) => void;
 }
 
-const menuItems = [
-  {
-    id: "dashboard",
-    title: "לוח בקרה",
-    icon: Home,
-  },
-  {
-    id: "quiz",
-    title: "יצירת שאלון",
-    icon: FileQuestion,
-  },
-  {
-    id: "summary",
-    title: "טבלת סיכום",
-    icon: Table,
-  },
-  {
-    id: "schedule",
-    title: "גאנט לימודים",
-    icon: Calendar,
-  },
-  {
-    id: "post",
-    title: "פוסט לימודי",
-    icon: MessageSquare,
-  },
-  {
-    id: "flashcards",
-    title: "כרטיסיות זיכרון",
-    icon: CreditCard,
-  },
-  {
-    id: "formulas",
-    title: "דף נוסחאות",
-    icon: Calculator,
-  },
-  {
-    id: "tts",
-    title: "קריאה בקול",
-    icon: Volume2,
-  },
-  {
-    id: "charts",
-    title: "מחולל תרשימים",
-    icon: BarChart3,
-  },
+const mainFeatures = [
+  { name: "לוח בקרה", icon: LayoutDashboard, id: "dashboard" },
+  { name: "יצירת מבחן", icon: FileQuestion, id: "quiz" },
+  { name: "טבלת סיכום", icon: Table, id: "summary" },
+  { name: "יצירת פוסט לימודי", icon: PenSquare, id: "post" },
+  { name: "יצירת כרטיסיות", icon: Layers, id: "flashcards" },
+  { name: "יצירת דף נוסחאות", icon: Sigma, id: "formulas" },
+  { name: "הקראת טקסט", icon: Volume2, id: "tts" },
+  { name: "יצירת גרפים", icon: BarChart3, id: "charts" },
+  { name: "יצירת מצגות", icon: Presentation, id: "presentations" },
+];
+
+const secondaryFeatures = [
+  { name: "לוח זמנים", icon: Calendar, id: "schedule" },
 ];
 
 export function AppSidebar({ activeFeature, setActiveFeature }: AppSidebarProps) {
+  const { isOpen, toggleSidebar } = useSidebar();
+
+  const NavItem = ({ feature, isMobile = false }: { feature: typeof mainFeatures[0], isMobile?: boolean }) => (
+    <button
+      onClick={() => {
+        setActiveFeature(feature.id);
+        if (isMobile) toggleSidebar();
+      }}
+      className={cn(
+        "flex items-center p-2 rounded-lg transition-colors w-full text-right",
+        activeFeature === feature.id
+          ? "bg-blue-100 text-blue-700"
+          : "text-gray-600 hover:bg-gray-100"
+      )}
+    >
+      <feature.icon className="h-5 w-5 ml-3" />
+      <span>{feature.name}</span>
+    </button>
+  );
+
+  const SidebarContent = ({ isMobile = false }: { isMobile?: boolean }) => (
+    <div className="flex flex-col h-full">
+      <div className="p-4 flex justify-between items-center">
+        <h1 className="text-2xl font-bold text-gray-800">EduGen</h1>
+        {isMobile && (
+          <button onClick={toggleSidebar} className="text-gray-500 hover:text-gray-800">
+            <X className="h-6 w-6" />
+          </button>
+        )}
+      </div>
+      <nav className="flex-1 px-4 space-y-2">
+        <p className="px-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">כלים עיקריים</p>
+        {mainFeatures.map((feature) => (
+          <NavItem key={feature.id} feature={feature} isMobile={isMobile} />
+        ))}
+        <p className="px-2 pt-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">כלים נוספים</p>
+        {secondaryFeatures.map((feature) => (
+          <NavItem key={feature.id} feature={feature} isMobile={isMobile} />
+        ))}
+      </nav>
+    </div>
+  );
+
   return (
-    <Sidebar side="right" className="border-l border-border/40">
-      <SidebarHeader className="p-6">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
-            <Brain className="w-6 h-6 text-white" />
-          </div>
-          <div>
-            <h2 className="text-lg font-semibold text-gray-900">פלטפורמת למידה</h2>
-            <p className="text-sm text-gray-500">חכמה ומתקדמת</p>
-          </div>
+    <>
+      {/* Desktop Sidebar */}
+      <aside className="hidden lg:block w-64 bg-white border-l border-gray-200 flex-shrink-0">
+        <SidebarContent />
+      </aside>
+
+      {/* Mobile Sidebar */}
+      <div className="lg:hidden">
+        <button onClick={toggleSidebar} className="fixed top-4 right-4 z-20 p-2 bg-white rounded-full shadow-md">
+          <Menu className="h-6 w-6 text-gray-700" />
+        </button>
+        <div
+          className={cn(
+            "fixed inset-0 bg-black bg-opacity-50 z-30 transition-opacity",
+            isOpen ? "opacity-100" : "opacity-0 pointer-events-none"
+          )}
+          onClick={toggleSidebar}
+        />
+        <div
+          className={cn(
+            "fixed top-0 right-0 h-full w-64 bg-white z-40 shadow-lg transform transition-transform",
+            isOpen ? "translate-x-0" : "translate-x-full"
+          )}
+        >
+          <SidebarContent isMobile />
         </div>
-      </SidebarHeader>
-      
-      <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel className="text-gray-600 font-medium">כלי למידה</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {menuItems.map((item) => (
-                <SidebarMenuItem key={item.id}>
-                  <SidebarMenuButton 
-                    asChild
-                    isActive={activeFeature === item.id}
-                    className="w-full justify-start hover:bg-blue-50 hover:text-blue-700 transition-colors"
-                  >
-                    <button 
-                      onClick={() => setActiveFeature(item.id)}
-                      className="flex items-center gap-3 w-full"
-                    >
-                      <item.icon className="w-5 h-5" />
-                      <span className="font-medium">{item.title}</span>
-                    </button>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-      </SidebarContent>
-      
-      <SidebarFooter className="p-4">
-        <div className="flex items-center gap-2 text-sm text-gray-500">
-          <Settings className="w-4 h-4" />
-          <span>מופעל על ידי OpenAI</span>
-        </div>
-      </SidebarFooter>
-    </Sidebar>
+      </div>
+    </>
   );
 }
