@@ -122,9 +122,8 @@ export const usePresentationGenerator = () => {
   };
 
   const handleGeneratePresentation = async () => {
-    // ... keep existing code (handleGeneratePresentation function, with updated result handling)
     const textToAnalyze = sourceText || topic;
-    
+
     if (!textToAnalyze.trim()) {
       toast({
         title: "שגיאה",
@@ -151,8 +150,18 @@ export const usePresentationGenerator = () => {
     });
 
     try {
+      const MAX_TEXT_LENGTH = 25000; // Set a character limit to avoid token errors
+      let finalText = textToAnalyze;
+      if (textToAnalyze.length > MAX_TEXT_LENGTH) {
+        finalText = textToAnalyze.substring(0, MAX_TEXT_LENGTH);
+        toast({
+          title: "שימו לב",
+          description: "הטקסט שסופק ארוך מדי וקוצר אוטומטית כדי למנוע שגיאות.",
+        });
+      }
+
       const result = await presentationSlidesFromText({
-        text: textToAnalyze,
+        text: finalText,
         slideCount: slideCount,
         topic: topic
       });
@@ -190,7 +199,6 @@ export const usePresentationGenerator = () => {
   };
 
   return {
-    // State
     topic, setTopic,
     sourceText, setSourceText,
     fileName,
@@ -203,7 +211,6 @@ export const usePresentationGenerator = () => {
     themes,
     fileInputRef,
     
-    // Actions
     handleFileChange,
     handleGeneratePresentation,
     handleReset,
