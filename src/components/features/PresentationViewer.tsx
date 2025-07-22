@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { X, ChevronLeft, ChevronRight, Download } from "lucide-react";
 import { PresentationData } from "@/hooks/usePresentationGenerator";
+import { PresentationChart } from "./PresentationChart";
 
 interface PresentationViewerProps {
   presentation: PresentationData;
@@ -55,6 +56,11 @@ export function PresentationViewer({ presentation, theme, onClose }: Presentatio
             {currentSlide + 1} / {presentation.slides.length}
           </Badge>
           <h2 className="text-white font-semibold">{presentation.title}</h2>
+          {currentSlideData.visual?.type === 'chart' && (
+            <Badge variant="outline" className="text-white border-white">
+              📊 גרף
+            </Badge>
+          )}
         </div>
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="sm" className="text-white hover:bg-white hover:bg-opacity-20">
@@ -67,9 +73,9 @@ export function PresentationViewer({ presentation, theme, onClose }: Presentatio
       </div>
 
       {/* Main Slide Content */}
-      <div className="w-full max-w-4xl mx-4">
+      <div className="w-full max-w-6xl mx-4">
         <Card className={`bg-gradient-to-br ${themeClasses[theme as keyof typeof themeClasses]} text-white border-0 shadow-2xl`}>
-          <CardContent className="p-12 min-h-[500px] flex flex-col justify-center">
+          <CardContent className="p-12 min-h-[600px] flex flex-col justify-center">
             <h1 className="text-4xl font-bold mb-8 text-center">
               {currentSlideData.title}
             </h1>
@@ -83,7 +89,16 @@ export function PresentationViewer({ presentation, theme, onClose }: Presentatio
               ))}
             </div>
 
-            {currentSlideData.visualSuggestion && (
+            {/* Chart Display */}
+            {currentSlideData.visual?.type === 'chart' && currentSlideData.visual.data && (
+              <PresentationChart 
+                chartData={currentSlideData.visual.data} 
+                theme={theme}
+              />
+            )}
+
+            {/* Visual Suggestion (fallback) */}
+            {currentSlideData.visualSuggestion && !currentSlideData.visual && (
               <div className="mt-8 p-4 bg-white bg-opacity-20 rounded-lg">
                 <p className="text-sm opacity-90">
                   💡 הצעה חזותית: {currentSlideData.visualSuggestion}
@@ -107,16 +122,20 @@ export function PresentationViewer({ presentation, theme, onClose }: Presentatio
         </Button>
         
         <div className="flex gap-2">
-          {presentation.slides.map((_, index) => (
+          {presentation.slides.map((slide, index) => (
             <button
               key={index}
               onClick={() => setCurrentSlide(index)}
-              className={`w-3 h-3 rounded-full transition-all ${
+              className={`w-3 h-3 rounded-full transition-all relative ${
                 index === currentSlide 
                   ? 'bg-white' 
                   : 'bg-white bg-opacity-50 hover:bg-opacity-75'
               }`}
-            />
+            >
+              {slide.visual?.type === 'chart' && (
+                <div className="absolute -top-1 -right-1 w-2 h-2 bg-yellow-400 rounded-full"></div>
+              )}
+            </button>
           ))}
         </div>
 

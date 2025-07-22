@@ -7,6 +7,8 @@ const openai = new OpenAI({
 // Helper function to generate chart data directly
 async function generateChartDataForSlide(text: string, slideTitle: string, topic: string) {
   try {
+    console.log(`🔄 Generating chart for slide: "${slideTitle}"`);
+    
     const prompt = `
       Based on the following text and the overall topic "${topic}", generate meaningful data for a chart relevant to the slide titled "${slideTitle}".
       The chart should be one of the following types: 'bar', 'pie', 'line', 'area', 'radar'.
@@ -29,6 +31,7 @@ async function generateChartDataForSlide(text: string, slideTitle: string, topic
         "explanation": "הגרף מציג..."
       }
     `;
+    
     const response = await openai.chat.completions.create({
       model: "gpt-4o",
       messages: [
@@ -37,14 +40,20 @@ async function generateChartDataForSlide(text: string, slideTitle: string, topic
       ],
       response_format: { type: "json_object" },
     });
+    
     const chartData = JSON.parse(response.choices[0].message.content || "{}");
+    console.log(`📊 Generated chart data:`, JSON.stringify(chartData, null, 2));
+    
     // Basic validation
     if (chartData.title && chartData.type && chartData.data && Array.isArray(chartData.data) && chartData.data.length > 0) {
+      console.log(`✅ Chart validation passed for slide: "${slideTitle}"`);
       return chartData;
     }
+    
+    console.log(`❌ Chart validation failed for slide: "${slideTitle}"`);
     return null;
   } catch (error) {
-    console.error(`Error generating chart data for slide "${slideTitle}":`, error);
+    console.error(`❌ Error generating chart data for slide "${slideTitle}":`, error);
     return null; // Return null on error to not break the whole presentation
   }
 }
@@ -60,14 +69,16 @@ Deno.serve(async (req) => {
       });
     }
 
+    console.log(`🚀 Starting presentation generation for topic: "${topic}" with ${slideCount} slides`);
+
     const initialPrompt = `
       Create a professional and detailed presentation in Hebrew on the topic "${topic}" based on the provided text.
       The presentation must have exactly ${slideCount} slides.
       
-      For each slide, provide:
+      IMPORTANT: For each slide, provide:
       1. A concise "title".
       2. A "content" field containing a single, well-written paragraph that summarizes a part of the text. Do NOT use bullet points. The content should flow logically from one slide to the next, covering the main points of the source text.
-      3. A boolean flag "generate_chart". Set this to 'true' for every third slide (slide 3, 6, 9, etc.) and 'false' for all other slides.
+      3. A boolean flag "generate_chart". Set this to 'true' for every third slide (slide 3, 6, 9, etc.) and 'false' for all other slides. This is MANDATORY - do not skip this field.
       
       Source Text:
       ---
@@ -100,13 +111,14 @@ Deno.serve(async (req) => {
     const response = await openai.chat.completions.create({
       model: "gpt-4o",
       messages: [
-        { role: "system", content: "You are an expert in creating structured, professional presentations in Hebrew based on text. You follow instructions precisely." },
+        { role: "system", content: "You are an expert in creating structured, professional presentations in Hebrew based on text. You follow instructions precisely and ALWAYS include the generate_chart field for each slide." },
         { role: "user", content: initialPrompt },
       ],
       response_format: { type: "json_object" },
     });
 
     const presentationStructure = JSON.parse(response.choices[0].message.content || "{}");
+    console.log(`📋 Generated presentation structure:`, JSON.stringify(presentationStructure, null, 2));
 
     if (!presentationStructure.slides || !Array.isArray(presentationStructure.slides)) {
         throw new Error("Failed to generate a valid presentation structure from the AI.");
@@ -114,13 +126,21 @@ Deno.serve(async (req) => {
 
     const finalSlides = [];
 
-    for (const slide of presentationStructure.slides) {
+    for (let i = 0; i < presentationStructure.slides.length; i++) {
+      const slide = presentationStructure.slides[i];
       let visual = null;
+      
+      console.log(`🔍 Processing slide ${i + 1}: "${slide.title}", generate_chart: ${slide.generate_chart}`);
+      
       if (slide.generate_chart === true) {
+        console.log(`📊 Generating chart for slide ${i + 1}...`);
         // Generate a real chart for this slide
         const chartData = await generateChartDataForSlide(text, slide.title, topic);
         if (chartData) {
           visual = { type: 'chart', data: chartData };
+          console.log(`✅ Chart successfully generated for slide ${i + 1}`);
+        } else {
+          console.log(`❌ Failed to generate chart for slide ${i + 1}`);
         }
       }
       
@@ -130,7 +150,8 @@ Deno.serve(async (req) => {
       finalSlides.push({ 
         title: slide.title,
         content: [slideContent], // Keep content as an array of one string to match the frontend hook
-        visual: visual 
+        visual: visual,
+        visualSuggestion: visual ? `גרף: ${visual.data?.title || 'גרף מותאם אישית'}` : 'אין המחשה ויזואלית'
       });
     }
 
@@ -139,13 +160,16 @@ Deno.serve(async (req) => {
       slides: finalSlides,
     };
 
+    console.log(`🎉 Presentation generation completed successfully with ${finalSlides.length} slides`);
+    console.log(`📊 Charts generated: ${finalSlides.filter(s => s.visual?.type === 'chart').length}`);
+
     return new Response(JSON.stringify(finalPresentation), {
       status: 200,
       headers: { "Content-Type": "application/json" },
     });
 
   } catch (error) {
-    console.error("Error in presentation generation function:", error);
+    console.error("❌ Error in presentation generation function:", error);
     return new Response(JSON.stringify({ error: "Failed to generate presentation: " + error.message }), {
       status: 500,
       headers: { "Content-Type": "application/json" },

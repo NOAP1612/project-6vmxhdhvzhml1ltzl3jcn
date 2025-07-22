@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-import { Upload, FileText, Presentation, Loader2, RotateCcw, Eye } from "lucide-react";
+import { Upload, FileText, Presentation, Loader2, RotateCcw, Eye, BarChart3 } from "lucide-react";
 import { usePresentationGenerator } from "@/hooks/usePresentationGenerator";
 import { PresentationViewer } from "./PresentationViewer";
 import { useState } from "react";
@@ -35,7 +35,7 @@ export function PresentationGenerator() {
     <div className="space-y-6">
       <div className="text-center">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">יצירת מצגות</h1>
-        <p className="text-gray-600">צור מצגות מקצועיות מטקסט או קבצי PDF</p>
+        <p className="text-gray-600">צור מצגות מקצועיות מטקסט או קבצי PDF עם גרפים אוטומטיים</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -75,6 +75,9 @@ export function PresentationGenerator() {
                   <SelectItem value="15">15 שקופיות</SelectItem>
                 </SelectContent>
               </Select>
+              <p className="text-xs text-gray-500">
+                📊 גרפים יתווספו אוטומטית כל 3 שקופיות
+              </p>
             </div>
 
             <Separator />
@@ -187,7 +190,12 @@ export function PresentationGenerator() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
-              <span>המצגת שלך מוכנה!</span>
+              <div className="flex items-center gap-2">
+                <span>המצגת שלך מוכנה!</span>
+                <Badge variant="outline" className="text-xs">
+                  📊 {presentationData.slides.filter(s => s.visual?.type === 'chart').length} גרפים
+                </Badge>
+              </div>
               <Button onClick={() => setShowViewer(true)}>
                 <Eye className="h-4 w-4 mr-2" />
                 הצג מצגת
@@ -200,21 +208,34 @@ export function PresentationGenerator() {
           <CardContent>
             <div className="grid gap-4">
               {presentationData.slides.map((slide, index) => (
-                <Card key={index} className="border-l-4 border-l-blue-500">
+                <Card key={index} className={`border-l-4 ${slide.visual?.type === 'chart' ? 'border-l-green-500' : 'border-l-blue-500'}`}>
                   <CardHeader className="pb-2">
-                    <CardTitle className="text-lg">
+                    <CardTitle className="text-lg flex items-center gap-2">
                       שקופית {index + 1}: {slide.title}
+                      {slide.visual?.type === 'chart' && (
+                        <Badge variant="secondary" className="text-xs">
+                          <BarChart3 className="h-3 w-3 mr-1" />
+                          גרף
+                        </Badge>
+                      )}
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <ul className="list-disc list-inside space-y-1 mb-3">
+                    <div className="space-y-2 mb-3">
                       {slide.content.map((point, pointIndex) => (
-                        <li key={pointIndex} className="text-gray-700">{point}</li>
+                        <p key={pointIndex} className="text-gray-700 leading-relaxed">{point}</p>
                       ))}
-                    </ul>
-                    <Badge variant="outline" className="text-xs">
-                      💡 {slide.visualSuggestion}
-                    </Badge>
+                    </div>
+                    {slide.visual?.type === 'chart' && slide.visual.data && (
+                      <Badge variant="outline" className="text-xs bg-green-50 text-green-700">
+                        📊 {slide.visual.data.title}
+                      </Badge>
+                    )}
+                    {slide.visualSuggestion && !slide.visual && (
+                      <Badge variant="outline" className="text-xs">
+                        💡 {slide.visualSuggestion}
+                      </Badge>
+                    )}
                   </CardContent>
                 </Card>
               ))}
