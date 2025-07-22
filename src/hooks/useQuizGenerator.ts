@@ -31,7 +31,6 @@ export const useQuizGenerator = () => {
   const { toast } = useToast();
 
   const withTimeout = async <T,>(promise: Promise<T>, timeoutMs: number): Promise<T> => {
-// ... keep existing code
     const timeoutPromise = new Promise<never>((_, reject) => {
       setTimeout(() => reject(new Error('Request timeout')), timeoutMs);
     });
@@ -40,7 +39,6 @@ export const useQuizGenerator = () => {
   };
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-// ... keep existing code
     const selectedFile = event.target.files?.[0];
     if (!selectedFile) return;
 
@@ -119,7 +117,6 @@ export const useQuizGenerator = () => {
   };
 
   const handleGenerateQuiz = async () => {
-// ... keep existing code
     if (!sourceText.trim()) {
       toast({
         title: "שגיאה",
@@ -135,23 +132,23 @@ export const useQuizGenerator = () => {
     setIsSubmitted(false);
 
     try {
-      const prompt = `צור חידון בעברית עם ${questionCount} שאלות על הטקסט הבא. כל שאלה צריכה להיות עם 4 אפשרויות תשובה, תשובה נכונה אחת, והסבר קצר. ודא שהשאלות מסתיימות בסימן שאלה.
+      const prompt = `You are an expert quiz creator for university students. Your task is to generate a multiple-choice quiz in Hebrew with ${questionCount} questions based on the provided academic text.
 
-טקסט:
+CRITICAL INSTRUCTIONS:
+1. DEEP CONCEPTUAL QUESTIONS: Generate questions that test deep understanding of the core concepts, arguments, and data presented in the text. Avoid superficial questions.
+2. IGNORE METADATA: DO NOT create questions about the text's structure, titles, chapter names, or section numbers. Focus on the content itself.
+3. UNIQUE AND DISTINCT ANSWERS: For each question, ensure that all 4 answer options (including the correct and incorrect ones) are unique, distinct, and plausible. Do not repeat answers.
+4. HEBREW LANGUAGE: The entire quiz (title, questions, options, explanation) must be in Hebrew.
+5. QUESTION FORMAT: Ensure every question ends with a question mark (?).
+6. EXPLANATION: For each question, provide a brief explanation for the correct answer.
+
+Here is the text:
 ${sourceText}
 
-החזר את התוצאה בפורמט JSON הבא:
-{
-  "title": "כותרת החידון",
-  "questions": [
-    {
-      "question": "השאלה כאן?",
-      "options": ["אפשרות 1", "אפשרות 2", "אפשרות 3", "אפשרות 4"],
-      "correctAnswer": "התשובה הנכונה",
-      "explanation": "הסבר קצר למה זו התשובה הנכונה"
-    }
-  ]
-}`;
+Please provide a concise title for the quiz that reflects the main topic of the text.
+
+Generate the quiz now based only on the substantive content of the text above.
+Return the result in the specified JSON format.`;
 
       const result = await invokeLLM({
         prompt,
@@ -199,7 +196,6 @@ ${sourceText}
   };
 
   const handleAnswerChange = (questionIndex: number, answer: string) => {
-// ... keep existing code
     setUserAnswers(prev => ({
       ...prev,
       [questionIndex]: answer
@@ -207,7 +203,6 @@ ${sourceText}
   };
 
   const handleCheckAnswer = (questionIndex: number) => {
-// ... keep existing code
     if (!quizData) return;
 
     const question = quizData.questions[questionIndex];
@@ -224,7 +219,6 @@ ${sourceText}
 
     const isCorrect = userAnswer === question.correctAnswer;
     
-    // Update the question with the check result
     const updatedQuestions = [...quizData.questions];
     updatedQuestions[questionIndex] = {
       ...question,
@@ -246,7 +240,6 @@ ${sourceText}
   };
 
   const handleReset = () => {
-// ... keep existing code
     setSourceText('');
     setFileName('');
     setQuizData(null);
