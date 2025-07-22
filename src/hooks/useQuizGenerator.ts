@@ -175,10 +175,28 @@ Return the result in the specified JSON format.`;
       });
 
       if (result && result.questions && Array.isArray(result.questions)) {
-        setQuizData(result as QuizData);
+        const processedQuestions = (result.questions as QuizQuestion[]).map(question => {
+          if (!Array.isArray(question.options)) {
+            console.warn('Options is not an array for question:', question.question);
+            return question;
+          }
+          const uniqueOptions = new Set(question.options);
+          if (uniqueOptions.size < question.options.length) {
+            console.warn('Duplicate options found and removed for question:', question.question);
+            return { ...question, options: Array.from(uniqueOptions) };
+          }
+          return question;
+        });
+
+        const processedQuizData = {
+          ...result,
+          questions: processedQuestions
+        };
+
+        setQuizData(processedQuizData as QuizData);
         toast({
           title: "הצלחה!",
-          description: `נוצר חידון עם ${result.questions.length} שאלות`,
+          description: `נוצר חידון עם ${processedQuizData.questions.length} שאלות`,
         });
       } else {
         throw new Error("Invalid quiz data received");
