@@ -81,7 +81,7 @@ export const useSummaryTable = () => {
 
       const { file_url } = await withTimeout(
         uploadFile({ file: selectedFile }), 
-        120000
+        180000 // Increased timeout
       );
 
       setUploadProgress('מעבד את הקובץ...');
@@ -106,7 +106,7 @@ export const useSummaryTable = () => {
           file_url,
           json_schema: schema,
         }),
-        300000
+        420000 // Increased timeout
       );
 
       if (result.status === 'success' && result.output && typeof (result.output as any).text_content === 'string') {
