@@ -1,13 +1,14 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { FileQuestion, Loader2, CheckCircle, XCircle } from "lucide-react";
+import { FileQuestion, Loader2, CheckCircle, Upload, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { createQuizQuestions } from "@/functions";
+import { uploadFile, extractDataFromUploadedFile } from "@/integrations/core";
 
 interface Question {
   question: string;
@@ -25,7 +26,90 @@ export function QuizGenerator() {
   const [isLoading, setIsLoading] = useState(false);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [showAnswers, setShowAnswers] = useState<boolean[]>([]);
+  const [isUploading, setIsUploading] = useState(false);
+  const [fileName, setFileName] = useState('');
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = event.target.files?.[0];
+    if (!selectedFile) return;
+
+    if (selectedFile.type !== 'application/pdf') {
+      toast({
+        title: "קובץ לא נתמך",
+        description: "אנא העלה קובץ PDF בלבד.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setFileName(selectedFile.name);
+    setIsUploading(true);
+    setTopic('');
+    setQuestions([]);
+
+    try {
+      toast({
+        title: "מעלה קובץ...",
+        description: "שלב 1 מתוך 2: מעלה את הקובץ לשרת.",
+      });
+      const { file_url } = await uploadFile({ file: selectedFile });
+
+      toast({
+        title: "מעבד את הקובץ...",
+        description: "שלב 2 מתוך 2: מחלץ טקסט מהקובץ. זה עשוי לקחת מספר רגעים...",
+      });
+
+      const schema = {
+        type: "object",
+        properties: {
+          text_content: {
+            type: "string",
+            description: "The full text content of the document, preserving original language (Hebrew or English).",
+          },
+        },
+        required: ["text_content"],
+      };
+
+      const result = await extractDataFromUploadedFile({
+        file_url,
+        json_schema: schema,
+      });
+
+      if (result.status === 'success' && result.output && typeof (result.output as any).text_content === 'string') {
+        const content = (result.output as { text_content: string }).text_content;
+        setTopic(content);
+        toast({
+          title: "הצלחה!",
+          description: "הטקסט מהקובץ חולץ בהצלחה ומוכן ליצירת שאלון.",
+        });
+      } else {
+        throw new Error(result.details || "Failed to extract text from PDF.");
+      }
+    } catch (error) {
+      console.error("Error processing file:", error);
+      toast({
+        title: "שגיאה בעיבוד הקובץ",
+        description: "לא הצלחנו לחלץ את הטקסט מהקובץ. אנא ודא שהקובץ תקין ונסה שוב.",
+        variant: "destructive",
+      });
+      setFileName('');
+    } finally {
+      setIsUploading(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
+  const handleClearFile = () => {
+    setFileName('');
+    setTopic('');
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
 
   const handleGenerate = async () => {
     if (!topic.trim()) {
@@ -87,18 +171,57 @@ export function QuizGenerator() {
         <CardHeader>
           <CardTitle>הגדרות השאלון</CardTitle>
           <CardDescription>
-            הזן את פרטי השאלון שברצונך ליצור
+            הזן את פרטי השאלון שברצונך ליצור, או העלה קובץ PDF כדי ליצור שאלון מהתוכן שלו.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <Label htmlFor="topic">נושא השאלון</Label>
+          <div className="space-y-2">
+            <Label>יצירה מתוך קובץ PDF (אופציונלי)</Label>
+            <div className="flex items-center gap-2">
+              <Label
+                htmlFor="pdf-upload"
+                className={`flex-grow flex items-center justify-center gap-2 cursor-pointer rounded-md border-2 border-dashed p-4 text-center text-gray-500 transition-colors hover:border-blue-500 hover:bg-blue-50 ${isUploading ? 'cursor-not-allowed bg-gray-100' : 'border-gray-300'}`}
+              >
+                <Upload className="w-5 h-5" />
+                <span>{isUploading ? 'מעבד קובץ...' : (fileName || 'לחץ לבחירת קובץ PDF')}</span>
+              </Label>
               <Input
+                id="pdf-upload"
+                type="file"
+                className="hidden"
+                onChange={handleFileChange}
+                accept="application/pdf"
+                disabled={isUploading}
+                ref={fileInputRef}
+              />
+              {fileName && !isUploading && (
+                <Button variant="ghost" size="icon" onClick={handleClearFile} className="shrink-0">
+                  <X className="w-5 h-5" />
+                </Button>
+              )}
+            </div>
+            <p className="text-xs text-gray-500">אין מגבלת עמודים. תומך בעברית ובאנגלית.</p>
+          </div>
+
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-white px-2 text-muted-foreground">או</span>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-2 md:col-span-2">
+              <Label htmlFor="topic">נושא השאלון (או הטקסט שחולץ)</Label>
+              <Textarea
                 id="topic"
-                placeholder="לדוגמה: היסטוריה של ישראל"
+                placeholder="לדוגמה: היסטוריה של ישראל, או הדבק טקסט כאן"
                 value={topic}
                 onChange={(e) => setTopic(e.target.value)}
+                className="h-32"
+                disabled={isUploading}
               />
             </div>
 
@@ -132,7 +255,7 @@ export function QuizGenerator() {
               </Select>
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-2 md:col-span-2">
               <Label htmlFor="language">שפה</Label>
               <Select value={language} onValueChange={setLanguage}>
                 <SelectTrigger>
@@ -148,7 +271,7 @@ export function QuizGenerator() {
 
           <Button 
             onClick={handleGenerate} 
-            disabled={isLoading}
+            disabled={isLoading || isUploading}
             className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600"
           >
             {isLoading ? (
