@@ -19,10 +19,11 @@ export function QuizGenerator() {
     handleFileChange,
     handleGenerateQuiz,
     handleAnswerChange,
-    handleSubmitQuiz,
+    handleCheckAnswer, // Updated function
     handleReset,
   } = useQuizGenerator();
 
+  // ... keep existing code (handleClearFile)
   const handleClearFile = () => {
     setSourceText('');
     if (fileInputRef.current) {
@@ -37,13 +38,14 @@ export function QuizGenerator() {
         userAnswers={userAnswers}
         isSubmitted={isSubmitted}
         onAnswerChange={handleAnswerChange}
-        onSubmit={handleSubmitQuiz}
+        onCheckAnswer={handleCheckAnswer} // Pass the new handler
         onReset={handleReset}
       />
     );
   }
 
   return (
+    // ... keep existing code (return statement for the form)
     <div className="space-y-6 max-w-3xl mx-auto animate-fade-in">
       <div className="text-center">
         <div className="inline-block p-3 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-xl">

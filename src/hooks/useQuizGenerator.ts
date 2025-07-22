@@ -9,6 +9,7 @@ export interface QuizQuestion {
   explanation: string;
   userAnswer?: string;
   isCorrect?: boolean;
+  isChecked?: boolean; // Add this to track individual question state
 }
 
 export interface QuizData {
@@ -18,16 +19,14 @@ export interface QuizData {
 
 export const useQuizGenerator = () => {
   const [sourceText, setSourceText] = useState('');
-  const [fileName, setFileName] = useState('');
-  const [isUploading, setIsUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  // ... keep existing code (state declarations)
   const [quizData, setQuizData] = useState<QuizData | null>(null);
   const [userAnswers, setUserAnswers] = useState<Record<number, string>>({});
-  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false); // This will now represent if the whole quiz is "finished"
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
+  // ... keep existing code (handleFileChange)
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = event.target.files?.[0];
     if (!selectedFile) return;
@@ -75,6 +74,7 @@ export const useQuizGenerator = () => {
     }
   };
 
+  // ... keep existing code (handleGenerateQuiz)
   const handleGenerateQuiz = async () => {
     if (!sourceText.trim()) {
       toast({ title: "שגיאה", description: "אנא הזן טקסט או העלה קובץ כדי ליצור שאלון.", variant: "destructive" });
@@ -127,27 +127,36 @@ export const useQuizGenerator = () => {
     setUserAnswers(prev => ({ ...prev, [questionIndex]: answer }));
   };
 
-  const handleSubmitQuiz = () => {
-    if (!quizData) return;
-    
-    let correctCount = 0;
-    const updatedQuestions = quizData.questions.map((q, index) => {
-      const userAnswer = userAnswers[index];
-      const isCorrect = userAnswer === q.correctAnswer;
-      if (isCorrect) correctCount++;
-      return { ...q, userAnswer, isCorrect };
-    });
+  const handleCheckAnswer = (questionIndex: number) => {
+    if (!quizData || !userAnswers[questionIndex]) return;
+
+    const updatedQuestions = [...quizData.questions];
+    const question = updatedQuestions[questionIndex];
+    const userAnswer = userAnswers[questionIndex];
+    const isCorrect = userAnswer === question.correctAnswer;
+
+    updatedQuestions[questionIndex] = {
+      ...question,
+      userAnswer,
+      isCorrect,
+      isChecked: true,
+    };
 
     setQuizData({ ...quizData, questions: updatedQuestions });
-    setIsSubmitted(true);
 
-    toast({
-      title: "השאלון הוגש!",
-      description: `השגת ציון של ${correctCount} מתוך ${quizData.questions.length}`,
-    });
+    const allChecked = updatedQuestions.every(q => q.isChecked);
+    if (allChecked) {
+      setIsSubmitted(true);
+      const correctCount = updatedQuestions.filter(q => q.isCorrect).length;
+      toast({
+        title: "כל הכבוד, סיימת את השאלון!",
+        description: `הציון הסופי שלך הוא ${correctCount} מתוך ${updatedQuestions.length}`,
+      });
+    }
   };
 
   const handleReset = () => {
+    // ... keep existing code (handleReset function)
     setSourceText('');
     setFileName('');
     setQuizData(null);
@@ -169,7 +178,7 @@ export const useQuizGenerator = () => {
     handleFileChange,
     handleGenerateQuiz,
     handleAnswerChange,
-    handleSubmitQuiz,
+    handleCheckAnswer, // Expose the new function
     handleReset,
   };
 };
