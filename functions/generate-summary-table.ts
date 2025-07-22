@@ -8,37 +8,41 @@ Deno.serve(async (req) => {
   try {
     const { topic, concepts, language, text } = await req.json();
 
-    const prompt = `
-You are an academic assistant specializing in creating detailed summary tables in ${language}. Your task is to create a summary for the topic "${topic}" based on the provided text.
-
-The summary table should focus on the following concepts:
-- ${concepts.join("\n- ")}
-
-CRITICAL INSTRUCTIONS:
-1.  STRICT GROUNDING: Base your ENTIRE output STRICTLY on the information found within the provided text. DO NOT use any external knowledge or make assumptions.
-2.  NO HALLUCINATIONS: If the text does not contain information for a specific concept or column (definition, explanation, example), you MUST write "Not specified in text" in the corresponding cell. Do not invent information.
-3.  FOCUS ON SUBSTANCE: For each concept, extract its definition, a detailed explanation, and a relevant example from the text.
-4.  LANGUAGE: The entire output, including the title and all table content, must be in ${language}.
-5.  JSON FORMAT: Return the output as a single JSON object with the following structure:
-    {
-      "title": "A concise title for the summary table in ${language}",
-      "summary": [
-        {
-          "concept": "The concept name",
-          "definition": "The definition from the text",
-          "explanation": "The explanation from the text",
-          "example": "An example from the text, or 'Not specified in text'"
-        }
-      ]
+    if (!text || !topic || !concepts || !language) {
+         return new Response(JSON.stringify({ error: "Missing required parameters" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
     }
-    Ensure the 'summary' array contains one object for each concept provided.
+
+    const prompt = `
+You are an academic assistant. Your task is to create a detailed summary table from the provided text for the topic "${topic}".
+
+**CRITICAL INSTRUCTIONS:**
+1.  **STRICT GROUNDING:** Base your ENTIRE output STRICTLY on the information found within the provided text. DO NOT use any external knowledge or make assumptions.
+2.  **NO HALLUCINATIONS:** If the text does not contain information for a specific concept or column (definition, explanation, example), you MUST write "Not specified in text". Do not invent information.
+3.  **FOCUS ON SUBSTANCE:** For each concept, extract its definition, a detailed explanation, and a relevant example from the text.
+4.  **LANGUAGE:** The entire output must be in ${language === 'hebrew' ? 'Hebrew' : 'English'}.
 
 Here is the text:
 ---
 ${text}
 ---
 
-Generate the summary table based only on the text above.
+The summary table should focus on the following concepts: ${concepts.join(", ")}.
+
+Return the output as a single JSON object with the following structure:
+{
+  "title": "A concise title for the summary table",
+  "summary": [
+    {
+      "concept": "The concept name",
+      "definition": "The definition from the text",
+      "explanation": "The explanation from the text",
+      "example": "An example from the text, or 'Not specified in text'"
+    }
+  ]
+}
 `;
 
     const response = await openai.chat.completions.create({
