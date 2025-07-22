@@ -41,36 +41,54 @@ export function PresentationChart({ chartData, theme = 'modern' }: PresentationC
 
       case 'pie':
         const RADIAN = Math.PI / 180;
-        const renderCustomizedLabel = ({ cx, cy, midAngle, outerRadius, percent, name }) => {
-          const radius = outerRadius * 1.3;
+        const renderCustomizedLabel = ({ cx, cy, midAngle, outerRadius, percent, name, index }) => {
+          // Increase radius for better spacing
+          const radius = outerRadius * 1.5;
           const x = cx + radius * Math.cos(-midAngle * RADIAN);
           const y = cy + radius * Math.sin(-midAngle * RADIAN);
 
+          // Calculate text positioning to avoid overlaps
+          const adjustedY = y + (index % 2 === 0 ? -5 : 5);
+
           return (
-            <text
-              x={x}
-              y={y}
-              fill="white"
-              textAnchor={x > cx ? 'start' : 'end'}
-              dominantBaseline="central"
-              fontSize={14}
-              className="pointer-events-none"
-            >
-              {`${name} (${(percent * 100).toFixed(0)}%)`}
-            </text>
+            <g>
+              {/* Connection line */}
+              <line
+                x1={cx + (outerRadius + 10) * Math.cos(-midAngle * RADIAN)}
+                y1={cy + (outerRadius + 10) * Math.sin(-midAngle * RADIAN)}
+                x2={x}
+                y2={adjustedY}
+                stroke="white"
+                strokeWidth={1}
+                opacity={0.7}
+              />
+              {/* Label text */}
+              <text
+                x={x}
+                y={adjustedY}
+                fill="white"
+                textAnchor={x > cx ? 'start' : 'end'}
+                dominantBaseline="central"
+                fontSize={13}
+                className="pointer-events-none"
+                style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.8)' }}
+              >
+                {`${name} (${(percent * 100).toFixed(0)}%)`}
+              </text>
+            </g>
           );
         };
 
         return (
-          <ResponsiveContainer width="100%" height={350}>
-            <PieChart margin={{ top: 30, right: 50, bottom: 30, left: 50 }}>
+          <ResponsiveContainer width="100%" height={400}>
+            <PieChart margin={{ top: 50, right: 80, bottom: 50, left: 80 }}>
               <Pie
                 data={chartData.data}
                 cx="50%"
                 cy="50%"
-                labelLine
+                labelLine={false}
                 label={renderCustomizedLabel}
-                outerRadius={90}
+                outerRadius={80}
                 fill="#8884d8"
                 dataKey="value"
               >
@@ -132,12 +150,26 @@ export function PresentationChart({ chartData, theme = 'modern' }: PresentationC
 
       case 'radar':
         return (
-          <ResponsiveContainer width="100%" height={300}>
-            <RadarChart data={chartData.data}>
+          <ResponsiveContainer width="100%" height={350}>
+            <RadarChart data={chartData.data} margin={{ top: 30, right: 30, bottom: 30, left: 30 }}>
               <PolarGrid stroke="rgba(255,255,255,0.2)" />
-              <PolarAngleAxis dataKey="name" tick={{ fill: 'white', fontSize: 12 }} />
-              <PolarRadiusAxis tick={{ fill: 'white', fontSize: 10 }} />
-              <Radar name="Value" dataKey="value" stroke={themeColors[0]} fill={themeColors[0]} fillOpacity={0.6} strokeWidth={2} />
+              <PolarAngleAxis 
+                dataKey="name" 
+                tick={{ fill: 'white', fontSize: 11 }}
+                className="text-white"
+              />
+              <PolarRadiusAxis 
+                tick={{ fill: 'white', fontSize: 9 }}
+                tickCount={5}
+              />
+              <Radar 
+                name="Value" 
+                dataKey="value" 
+                stroke={themeColors[0]} 
+                fill={themeColors[0]} 
+                fillOpacity={0.6} 
+                strokeWidth={2} 
+              />
               <Tooltip 
                 contentStyle={{ 
                   backgroundColor: 'rgba(0,0,0,0.8)', 
