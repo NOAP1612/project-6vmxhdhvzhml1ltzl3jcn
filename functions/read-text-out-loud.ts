@@ -8,8 +8,8 @@ const openai = new OpenAI({
 
 Deno.serve(async (req) => {
   try {
-    // Extract text and voice from the request body
-    const { text, voice = 'alloy' } = await req.json();
+    // Extract text, voice, and speed from the request body
+    const { text, voice = 'alloy', speed = 1.0 } = await req.json();
 
     // Ensure text is provided
     if (!text) {
@@ -19,11 +19,15 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Validate speed parameter (must be between 0.25 and 4.0)
+    const validSpeed = Math.max(0.25, Math.min(4.0, speed));
+
     // Call the OpenAI API to generate speech
     const mp3 = await openai.audio.speech.create({
       model: "tts-1",
-      voice: voice, // Now using 'alloy' as the default voice
+      voice: voice, // Using 'alloy' as the default voice
       input: text,
+      speed: validSpeed, // Control speech speed (0.25x to 4.0x)
     });
 
     // Get the audio data as a buffer and encode it to base64
