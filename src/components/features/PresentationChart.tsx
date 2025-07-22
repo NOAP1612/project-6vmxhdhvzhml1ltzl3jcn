@@ -42,53 +42,82 @@ export function PresentationChart({ chartData, theme = 'modern' }: PresentationC
       case 'pie':
         const RADIAN = Math.PI / 180;
         const renderCustomizedLabel = ({ cx, cy, midAngle, outerRadius, percent, name, index }) => {
-          // Increase radius for better spacing
-          const radius = outerRadius * 1.5;
+          // Calculate position outside the pie chart
+          const radius = outerRadius + 60; // Increased distance from pie
           const x = cx + radius * Math.cos(-midAngle * RADIAN);
           const y = cy + radius * Math.sin(-midAngle * RADIAN);
 
-          // Calculate text positioning to avoid overlaps
-          const adjustedY = y + (index % 2 === 0 ? -5 : 5);
-
+          // Determine text anchor based on position
+          const isRightSide = x > cx;
+          
           return (
             <g>
-              {/* Connection line */}
+              {/* Connection line from pie edge to label */}
               <line
-                x1={cx + (outerRadius + 10) * Math.cos(-midAngle * RADIAN)}
-                y1={cy + (outerRadius + 10) * Math.sin(-midAngle * RADIAN)}
-                x2={x}
-                y2={adjustedY}
+                x1={cx + (outerRadius + 5) * Math.cos(-midAngle * RADIAN)}
+                y1={cy + (outerRadius + 5) * Math.sin(-midAngle * RADIAN)}
+                x2={cx + (outerRadius + 35) * Math.cos(-midAngle * RADIAN)}
+                y2={cy + (outerRadius + 35) * Math.sin(-midAngle * RADIAN)}
                 stroke="white"
                 strokeWidth={1}
-                opacity={0.7}
+                opacity={0.8}
               />
-              {/* Label text */}
+              {/* Horizontal line */}
+              <line
+                x1={cx + (outerRadius + 35) * Math.cos(-midAngle * RADIAN)}
+                y1={cy + (outerRadius + 35) * Math.sin(-midAngle * RADIAN)}
+                x2={x - (isRightSide ? 5 : -5)}
+                y2={y}
+                stroke="white"
+                strokeWidth={1}
+                opacity={0.8}
+              />
+              {/* Label text positioned clearly outside */}
               <text
                 x={x}
-                y={adjustedY}
+                y={y}
                 fill="white"
-                textAnchor={x > cx ? 'start' : 'end'}
+                textAnchor={isRightSide ? 'start' : 'end'}
                 dominantBaseline="central"
-                fontSize={13}
+                fontSize={12}
                 className="pointer-events-none"
-                style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.8)' }}
+                style={{ 
+                  textShadow: '2px 2px 4px rgba(0,0,0,0.9)',
+                  fontWeight: '500'
+                }}
               >
-                {`${name} (${(percent * 100).toFixed(0)}%)`}
+                {`${name}`}
+              </text>
+              {/* Percentage on separate line */}
+              <text
+                x={x}
+                y={y + 15}
+                fill="white"
+                textAnchor={isRightSide ? 'start' : 'end'}
+                dominantBaseline="central"
+                fontSize={11}
+                className="pointer-events-none"
+                style={{ 
+                  textShadow: '2px 2px 4px rgba(0,0,0,0.9)',
+                  opacity: 0.9
+                }}
+              >
+                {`${(percent * 100).toFixed(0)}%`}
               </text>
             </g>
           );
         };
 
         return (
-          <ResponsiveContainer width="100%" height={400}>
-            <PieChart margin={{ top: 50, right: 80, bottom: 50, left: 80 }}>
+          <ResponsiveContainer width="100%" height={450}>
+            <PieChart margin={{ top: 60, right: 120, bottom: 60, left: 120 }}>
               <Pie
                 data={chartData.data}
                 cx="50%"
                 cy="50%"
                 labelLine={false}
                 label={renderCustomizedLabel}
-                outerRadius={80}
+                outerRadius={70}
                 fill="#8884d8"
                 dataKey="value"
               >
