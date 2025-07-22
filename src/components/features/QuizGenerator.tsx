@@ -29,7 +29,6 @@ export function QuizGenerator() {
   } = useQuizGenerator();
 
   const handleClearFile = () => {
-// ... keep existing code
     setSourceText('');
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
@@ -37,14 +36,13 @@ export function QuizGenerator() {
   };
 
   if (quizData) {
-// ... keep existing code
     return (
       <QuizDisplay
         quizData={quizData}
         userAnswers={userAnswers}
         isSubmitted={isSubmitted}
         onAnswerChange={handleAnswerChange}
-        onCheckAnswer={handleCheckAnswer} // Pass the new handler
+        onCheckAnswer={handleCheckAnswer}
         onReset={handleReset}
       />
     );
@@ -54,13 +52,48 @@ export function QuizGenerator() {
 
   return (
     <div className="space-y-6 max-w-3xl mx-auto animate-fade-in relative">
-      {isUploading && (
-        <div className="absolute inset-0 bg-white/80 backdrop-blur-sm flex flex-col items-center justify-center z-10 rounded-lg">
-          <Loader2 className="w-12 h-12 text-blue-600 animate-spin mb-4" />
-          <p className="text-lg font-semibold text-gray-700">{uploadProgress || 'מעבד קובץ...'}</p>
-          <p className="text-sm text-gray-500">זה עשוי לקחת מספר רגעים...</p>
+      {/* Enhanced Loading Overlay */}
+      {(isUploading || isLoading) && (
+        <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex flex-col items-center justify-center z-50">
+          <div className="bg-white rounded-2xl p-8 shadow-2xl max-w-md w-full mx-4 animate-scale-in">
+            <div className="flex flex-col items-center space-y-6">
+              <div className="relative">
+                <div className="w-20 h-20 border-4 border-blue-200 rounded-full animate-spin">
+                  <div className="w-4 h-4 bg-blue-600 rounded-full absolute top-0 left-1/2 transform -translate-x-1/2"></div>
+                </div>
+                <div className="absolute inset-0 w-20 h-20 border-4 border-transparent border-t-blue-600 rounded-full animate-spin" style={{ animationDirection: 'reverse', animationDuration: '1s' }}></div>
+              </div>
+              
+              <div className="text-center space-y-2">
+                <h3 className="text-xl font-bold text-gray-800">
+                  {isUploading ? 'מעלה קובץ...' : 'יוצר שאלון...'}
+                </h3>
+                <p className="text-gray-600">
+                  {isUploading 
+                    ? uploadProgress || 'מעבד את הקובץ שלך...'
+                    : 'יוצר שאלות חכמות מהתוכן...'
+                  }
+                </p>
+              </div>
+
+              {/* Animated Progress Bar */}
+              <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+                <div className="h-full bg-gradient-to-r from-blue-500 via-purple-500 to-indigo-500 rounded-full animate-progress"></div>
+              </div>
+
+              <div className="flex items-center space-x-2 text-sm text-gray-500">
+                <div className="flex space-x-1">
+                  <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce"></div>
+                  <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                  <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                </div>
+                <span>זה עשוי לקחת מספר רגעים</span>
+              </div>
+            </div>
+          </div>
         </div>
       )}
+
       <div className="text-center">
         <div className="inline-block p-3 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-xl">
           <FileQuestion className="w-8 h-8 text-white" />
@@ -127,7 +160,7 @@ export function QuizGenerator() {
           <Button 
             onClick={handleGenerateQuiz} 
             disabled={isLoading || !sourceText.trim()}
-            className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
+            className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 transform hover:scale-105 transition-all duration-200"
           >
             {isLoading ? (
               <>
