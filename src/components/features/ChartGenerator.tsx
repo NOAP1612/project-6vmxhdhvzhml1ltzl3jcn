@@ -8,7 +8,6 @@ import { Upload, X, Loader2 } from "lucide-react";
 const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884d8", "#82ca9d"];
 
 const renderChart = (chart: ChartData) => {
-// ... keep existing code
   switch (chart.type) {
     case "bar":
       return (
@@ -69,7 +68,6 @@ const renderChart = (chart: ChartData) => {
 };
 
 export function ChartGenerator() {
-// ... keep existing code
   const {
     sourceText, setSourceText,
     fileName,
@@ -132,14 +130,22 @@ export function ChartGenerator() {
       </Card>
 
       {chartsData && (
-        <div className="grid gap-6 md:grid-cols-2">
+        <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2">
           {chartsData.charts.map((chart, index) => (
-            <Card key={index}>
+            <Card key={index} className="w-full">
               <CardHeader>
-                <CardTitle>{chart.title}</CardTitle>
+                <CardTitle className="text-center">{chart.title}</CardTitle>
               </CardHeader>
-              <CardContent>
-                {renderChart(chart)}
+              <CardContent className="space-y-4">
+                <div className="w-full">
+                  {renderChart(chart)}
+                </div>
+                {chart.explanation && (
+                  <div className="mt-4 p-4 bg-gray-50 rounded-lg border-r-4 border-blue-500">
+                    <h4 className="font-semibold text-gray-800 mb-2">פירוט הגרף:</h4>
+                    <p className="text-gray-700 leading-relaxed">{chart.explanation}</p>
+                  </div>
+                )}
               </CardContent>
             </Card>
           ))}

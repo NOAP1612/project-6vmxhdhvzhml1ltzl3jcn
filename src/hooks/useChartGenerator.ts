@@ -7,6 +7,7 @@ export interface ChartData {
   title: string;
   type: 'bar' | 'pie' | 'line' | 'area' | 'radar' | 'treemap';
   data: { name: string; value: number }[];
+  explanation: string;
 }
 
 export interface ChartsResponse {
@@ -14,6 +15,7 @@ export interface ChartsResponse {
 }
 
 export const useChartGenerator = () => {
+  // ... keep existing code (state variables and functions)
   const [sourceText, setSourceText] = useState('');
   const [fileName, setFileName] = useState('');
   const [isUploading, setIsUploading] = useState(false);
@@ -31,6 +33,7 @@ export const useChartGenerator = () => {
   };
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    // ... keep existing code (file handling logic)
     const selectedFile = event.target.files?.[0];
     if (!selectedFile) return;
 
@@ -101,6 +104,7 @@ export const useChartGenerator = () => {
   };
 
   const handleGenerateCharts = async () => {
+    // ... keep existing code (chart generation logic)
     if (!sourceText.trim()) {
       toast({
         title: "שגיאה",
@@ -138,6 +142,7 @@ export const useChartGenerator = () => {
   };
 
   const handleReset = () => {
+    // ... keep existing code (reset logic)
     setSourceText('');
     setFileName('');
     setChartsData(null);

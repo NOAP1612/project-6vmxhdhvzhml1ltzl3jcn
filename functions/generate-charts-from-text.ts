@@ -24,20 +24,27 @@ Deno.serve(async (req) => {
     }
 
     const prompt = `
-      Analyze the following text in Hebrew. Your goal is to create a "visual formula sheet" by extracting up to 5 key data points, concepts, or relationships that can be visualized.
+      נתח את הטקסט הבא בעברית. המטרה שלך היא ליצור "דף נוסחאות חזותי" על ידי חילוץ עד 5 נקודות מידע מרכזיות, מושגים או קשרים שניתן להמחיש.
 
-      For each key insight, suggest a chart (e.g., bar, pie, line, area), provide a clear Hebrew title, and generate the corresponding data points. The data should be ready for plotting.
+      עבור כל תובנה מרכזית:
+      - הצע גרף מפורט (כגון עמודות, עוגה, קו, שטח) עם כמה שיותר קטגוריות רלוונטיות מהטקסט.
+      - ספק כותרת ברורה בעברית.
+      - צור את נקודות הנתונים המתאימות, מוכנות לשרטוט.
+      - כתב הסבר מפורט (בעברית) מתחת לגרף, המתאר מה הגרף מראה ואילו תובנות ניתן ללמוד ממנו.
+      - הקפד שהנתונים יהיו מבוססים על הטקסט או סיכום לוגי שלו.
 
-      Text:
+      טקסט:
       ${text}
 
-      Return a single JSON object with a "charts" array. Each object in the array should represent one chart and have the following structure:
+      החזר אובייקט JSON יחיד עם מערך "charts". כל אובייקט במערך צריך לייצג גרף אחד ולהיות במבנה הבא:
       {
-        "title": "Hebrew Chart Title",
+        "title": "כותרת הגרף בעברית",
         "type": "bar",
-        "data": [ { "name": "Category Name", "value": 123 } ]
+        "data": [ { "name": "שם הקטגוריה", "value": 123 } ],
+        "explanation": "פירוט מפורט בעברית על מה שהגרף מראה, מה המשמעות של הנתונים, ואילו תובנות חשובות ניתן ללמוד ממנו"
       }
-      Ensure the generated data is directly from the text or a logical summary of it. Generate between 2 and 5 different charts if the text allows.
+      
+      צור בין 2 ל-5 גרפים שונים ומפורטים אם הטקסט מאפשר זאת. הקפד שכל גרף יהיה עשיר במידע ובעל ערך הסברי גבוה.
     `;
 
     const response = await openai.chat.completions.create({
@@ -45,7 +52,7 @@ Deno.serve(async (req) => {
         messages: [
             {
                 role: "system",
-                content: "You are an expert data analyst specializing in creating data visualizations from text. You always respond in valid JSON format."
+                content: "אתה מומחה בניתוח נתונים המתמחה ביצירת הדמיות נתונים מטקסט. אתה תמיד מחזיר תשובה בפורמט JSON תקין ומפורט."
             },
             {
                 role: "user",
@@ -53,6 +60,7 @@ Deno.serve(async (req) => {
             }
         ],
         response_format: { type: "json_object" },
+        temperature: 0.3,
     });
 
     const content = response.choices[0].message.content;
