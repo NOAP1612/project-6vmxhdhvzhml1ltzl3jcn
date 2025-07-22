@@ -7,7 +7,7 @@ import { PresentationGenerator } from "@/components/PresentationGenerator";
 import { QuizGenerator } from "@/components/QuizGenerator";
 import { ChartGenerator } from "@/components/ChartGenerator";
 import { SummaryTable } from "@/components/SummaryTable";
-import BibliographyFormatter from "@/components/BibliographyFormatter";
+import { BibliographyFormatter } from "@/components/BibliographyFormatter";
 
 const menuItems = [
   { id: "dashboard", title: "ראשי", icon: Home },
