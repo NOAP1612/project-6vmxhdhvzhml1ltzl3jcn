@@ -8,11 +8,11 @@ const Index = () => {
   const [activeFeature, setActiveFeature] = useState('dashboard');
 
   return (
-    <div className="min-h-screen font-hebrew" 
+    <div className="min-h-screen font-hebrew overflow-hidden" 
          style={{ background: 'linear-gradient(to bottom, #5BD383 0%, #29B366 100%)' }} 
          dir="rtl">
       <SidebarProvider>
-        <div className="flex min-h-screen w-full">
+        <div className="flex min-h-screen w-full overflow-hidden">
           <AppSidebar activeFeature={activeFeature} setActiveFeature={setActiveFeature} />
           <MainContent activeFeature={activeFeature} />
         </div>
