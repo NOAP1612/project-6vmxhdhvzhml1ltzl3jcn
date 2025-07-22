@@ -1,5 +1,5 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { SummaryData } from "@/hooks/useSummaryTable";
 
 interface SummaryTableDisplayProps {
@@ -10,43 +10,30 @@ export function SummaryTableDisplay({ summaryData }: SummaryTableDisplayProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{summaryData.title}</CardTitle>
-        <CardDescription>
-          טבלת סיכום עם {summaryData.summary.length} מושגים
-        </CardDescription>
+        <CardTitle className="text-center text-2xl">{summaryData.title}</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="overflow-x-auto">
-          <table className="w-full border-collapse">
-            <thead>
-              <tr className="border-b-2 border-gray-200">
-                <th className="text-right p-4 font-semibold text-gray-900 bg-gray-50">מושג</th>
-                <th className="text-right p-4 font-semibold text-gray-900 bg-gray-50">הגדרה</th>
-                <th className="text-right p-4 font-semibold text-gray-900 bg-gray-50">הסבר מפורט</th>
-                <th className="text-right p-4 font-semibold text-gray-900 bg-gray-50">דוגמה</th>
-              </tr>
-            </thead>
-            <tbody>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-1/4 font-bold text-right">מושג</TableHead>
+                <TableHead className="w-1/4 font-bold text-right">הגדרה</TableHead>
+                <TableHead className="w-1/2 font-bold text-right">הסבר ופירוט</TableHead>
+                <TableHead className="w-1/4 font-bold text-right">דוגמה</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {summaryData.summary.map((item, index) => (
-                <tr key={index} className="border-b border-gray-100 hover:bg-gray-50">
-                  <td className="p-4 font-medium text-gray-900 align-top">
-                    <Badge variant="outline" className="mb-2">
-                      {item.concept}
-                    </Badge>
-                  </td>
-                  <td className="p-4 text-gray-800 align-top">
-                    {item.definition}
-                  </td>
-                  <td className="p-4 text-gray-700 align-top leading-relaxed">
-                    {item.explanation}
-                  </td>
-                  <td className="p-4 text-gray-600 align-top">
-                    {item.example || '-'}
-                  </td>
-                </tr>
+                <TableRow key={index}>
+                  <TableCell className="font-medium text-right">{item.concept}</TableCell>
+                  <TableCell className="text-right">{item.definition}</TableCell>
+                  <TableCell className="text-right">{item.explanation}</TableCell>
+                  <TableCell className="text-right">{item.example || 'N/A'}</TableCell>
+                </TableRow>
               ))}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </div>
       </CardContent>
     </Card>

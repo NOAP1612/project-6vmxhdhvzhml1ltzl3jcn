@@ -1,130 +1,64 @@
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarHeader,
-  SidebarFooter,
-} from "@/components/ui/sidebar";
-import { 
-  Brain, 
-  FileQuestion, 
-  Table, 
-  Calendar, 
-  MessageSquare, 
-  CreditCard, 
-  Calculator,
-  Volume2,
-  Home,
-  Settings,
-  BarChart3
-} from "lucide-react";
+import { Sidebar, SidebarHeader, SidebarContent, SidebarFooter, SidebarItem, SidebarTrigger } from "@/components/ui/sidebar";
+import { Home, FileQuestion, BarChart3, FileText, Settings, LifeBuoy, LogOut } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useMobile } from "@/hooks/use-mobile";
 
 interface AppSidebarProps {
   activeFeature: string;
   setActiveFeature: (feature: string) => void;
 }
 
-const menuItems = [
-  {
-    id: "dashboard",
-    title: "לוח בקרה",
-    icon: Home,
-  },
-  {
-    id: "quiz",
-    title: "יצירת שאלון",
-    icon: FileQuestion,
-  },
-  {
-    id: "summary",
-    title: "טבלת סיכום",
-    icon: Table,
-  },
-  {
-    id: "schedule",
-    title: "גאנט לימודים",
-    icon: Calendar,
-  },
-  {
-    id: "post",
-    title: "פוסט לימודי",
-    icon: MessageSquare,
-  },
-  {
-    id: "flashcards",
-    title: "כרטיסיות זיכרון",
-    icon: CreditCard,
-  },
-  {
-    id: "formulas",
-    title: "דף נוסחאות",
-    icon: Calculator,
-  },
-  {
-    id: "tts",
-    title: "קריאה בקול",
-    icon: Volume2,
-  },
-  {
-    id: "charts",
-    title: "מחולל תרשימים",
-    icon: BarChart3,
-  },
-];
-
 export function AppSidebar({ activeFeature, setActiveFeature }: AppSidebarProps) {
+  const isMobile = useMobile();
+
+  const sidebarItems = [
+    { id: 'dashboard', icon: Home, label: 'ראשי' },
+    { id: 'quiz', icon: FileQuestion, label: 'יצירת שאלונים' },
+    { id: 'charts', icon: BarChart3, label: 'יצירת גרפים' },
+    { id: 'summary', icon: FileText, label: 'טבלת סיכום' },
+  ];
+
   return (
-    <Sidebar side="right" className="border-l border-border/40">
-      <SidebarHeader className="p-6">
+    <Sidebar>
+      <SidebarHeader>
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
-            <Brain className="w-6 h-6 text-white" />
-          </div>
-          <div>
-            <h2 className="text-lg font-semibold text-gray-900">פלטפורמת למידה</h2>
-            <p className="text-sm text-gray-500">חכמה ומתקדמת</p>
+          <Avatar>
+            <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
+            <AvatarFallback>CN</AvatarFallback>
+          </Avatar>
+          <div className="flex flex-col">
+            <span className="font-semibold tracking-tight">שם המשתמש</span>
+            <span className="text-sm text-muted-foreground">user@email.com</span>
           </div>
         </div>
       </SidebarHeader>
-      
       <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel className="text-gray-600 font-medium">כלי למידה</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {menuItems.map((item) => (
-                <SidebarMenuItem key={item.id}>
-                  <SidebarMenuButton 
-                    asChild
-                    isActive={activeFeature === item.id}
-                    className="w-full justify-start hover:bg-blue-50 hover:text-blue-700 transition-colors"
-                  >
-                    <button 
-                      onClick={() => setActiveFeature(item.id)}
-                      className="flex items-center gap-3 w-full"
-                    >
-                      <item.icon className="w-5 h-5" />
-                      <span className="font-medium">{item.title}</span>
-                    </button>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+        {sidebarItems.map((item) => (
+          <SidebarItem
+            key={item.id}
+            isActive={activeFeature === item.id}
+            onClick={() => setActiveFeature(item.id)}
+          >
+            <item.icon className="w-5 h-5" />
+            {item.label}
+          </SidebarItem>
+        ))}
       </SidebarContent>
-      
-      <SidebarFooter className="p-4">
-        <div className="flex items-center gap-2 text-sm text-gray-500">
-          <Settings className="w-4 h-4" />
-          <span>מופעל על ידי OpenAI</span>
-        </div>
+      <SidebarFooter>
+        <SidebarItem>
+          <LifeBuoy className="w-5 h-5" />
+          תמיכה
+        </SidebarItem>
+        <SidebarItem>
+          <Settings className="w-5 h-5" />
+          הגדרות
+        </SidebarItem>
+        <SidebarItem>
+          <LogOut className="w-5 h-5" />
+          התנתק
+        </SidebarItem>
       </SidebarFooter>
+      {isMobile && <SidebarTrigger />}
     </Sidebar>
   );
 }
