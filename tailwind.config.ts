@@ -56,32 +56,37 @@ export default {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
 				},
-				// Custom green gradient colors
-				'green-gradient': {
+				// Bright green colors matching the images
+				'bright-green': {
 					'50': '#f0fdf4',
 					'100': '#dcfce7',
 					'200': '#bbf7d0',
 					'300': '#86efac',
-					'400': '#4ade80',
-					'500': '#22c55e',
-					'600': '#16a34a',
+					'400': '#4ade80', // Main bright green
+					'500': '#22c55e', // Medium green
+					'600': '#16a34a', // Darker green
 					'700': '#15803d',
 					'800': '#166534',
 					'900': '#14532d',
 				},
-				// Custom purple accent colors
-				'purple-accent': {
+				// Purple colors matching the images
+				'brand-purple': {
 					'50': '#faf5ff',
 					'100': '#f3e8ff',
 					'200': '#e9d5ff',
 					'300': '#d8b4fe',
 					'400': '#c084fc',
 					'500': '#a855f7',
-					'600': '#9333ea',
+					'600': '#9333ea', // Main purple from images
 					'700': '#7c3aed',
 					'800': '#6b21a8',
 					'900': '#581c87',
 				},
+			},
+			backgroundImage: {
+				'green-gradient': 'linear-gradient(135deg, #4ade80 0%, #22c55e 50%, #16a34a 100%)',
+				'bright-green-gradient': 'linear-gradient(135deg, #4ade80 0%, #22c55e 100%)',
+				'purple-gradient': 'linear-gradient(135deg, #9333ea 0%, #7c3aed 100%)',
 			},
 			borderRadius: {
 				xl: "calc(var(--radius) + 4px)",
@@ -119,8 +124,8 @@ export default {
 					'50%': { transform: 'translateY(-10px)' }
 				},
 				'glow': {
-					'0%, 100%': { boxShadow: '0 0 20px rgba(168, 85, 247, 0.4)' },
-					'50%': { boxShadow: '0 0 30px rgba(168, 85, 247, 0.6)' }
+					'0%, 100%': { boxShadow: '0 0 20px rgba(147, 51, 234, 0.4)' },
+					'50%': { boxShadow: '0 0 30px rgba(147, 51, 234, 0.6)' }
 				},
 				'pulse-slow': {
 					'0%, 100%': { opacity: '1' },
@@ -141,7 +146,7 @@ export default {
 			},
 			boxShadow: {
 				'glass': '0 8px 32px 0 rgba(31, 38, 135, 0.37)',
-				'glow-purple': '0 0 20px rgba(168, 85, 247, 0.4)',
+				'glow-purple': '0 0 20px rgba(147, 51, 234, 0.4)',
 				'glow-green': '0 0 20px rgba(34, 197, 94, 0.4)',
 			}
 		}
