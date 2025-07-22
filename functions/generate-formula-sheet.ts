@@ -1,106 +1,72 @@
+import OpenAI from 'npm:openai@4.52.7';
+
+// Initialize OpenAI client with API key from environment variables
+const openai = new OpenAI({
+  apiKey: Deno.env.get("OPENAI_API_KEY"),
+});
+
 Deno.serve(async (req) => {
   try {
-    const { subject, language } = await req.json();
-    
-    const openaiApiKey = Deno.env.get("OPENAI_API_KEY");
-    if (!openaiApiKey) {
-      return new Response(JSON.stringify({ error: "OpenAI API key not configured" }), {
-        status: 500,
+    // Ensure the request method is POST
+    if (req.method !== 'POST') {
+      return new Response(JSON.stringify({ error: 'Method not allowed' }), {
+        status: 405,
         headers: { "Content-Type": "application/json" },
       });
     }
 
-    const prompt = language === "hebrew" 
-      ? `צור דף נוסחאות מסודר ומעוצב לתחום "${subject}".
-         כלול את הנוסחאות החשובות ביותר עם הסברים קצרים.
-         
-         החזר את התוצאה בפורמט JSON:
-         {
-           "title": "דף נוסחאות - ${subject}",
-           "categories": [
-             {
-               "name": "שם הקטגוריה",
-               "formulas": [
-                 {
-                   "name": "שם הנוסחה",
-                   "formula": "הנוסחה (LaTeX או טקסט)",
-                   "description": "הסבר קצר",
-                   "variables": "הסבר המשתנים",
-                   "example": "דוגמה (אופציונלי)"
-                 }
-               ]
-             }
-           ]
-         }`
-      : `Create an organized and formatted formula sheet for "${subject}".
-         Include the most important formulas with brief explanations.
-         
-         Return the result in JSON format:
-         {
-           "title": "Formula Sheet - ${subject}",
-           "categories": [
-             {
-               "name": "Category name",
-               "formulas": [
-                 {
-                   "name": "Formula name",
-                   "formula": "Formula (LaTeX or text)",
-                   "description": "Brief explanation",
-                   "variables": "Variable explanations",
-                   "example": "Example (optional)"
-                 }
-               ]
-             }
-           ]
-         }`;
+    const { text } = await req.json();
+    if (!text || typeof text !== 'string' || text.trim() === '') {
+      return new Response(JSON.stringify({ error: 'Text is required and must be a non-empty string' }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
 
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${openaiApiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "gpt-4",
+    const prompt = `
+      Analyze the following text in Hebrew. Your goal is to create a "visual formula sheet" by extracting key data, concepts, and relationships that can be visualized.
+
+      For each key insight, suggest a chart (e.g., bar, pie, line, area), provide a clear Hebrew title, and generate the corresponding data points. The data should be ready for plotting.
+
+      Text:
+      ${text}
+
+      Return a single JSON object with a "charts" array. Each object in the array should represent one chart and have the following structure:
+      {
+        "title": "Hebrew Chart Title",
+        "type": "bar",
+        "data": [ { "name": "Category Name", "value": 123 } ]
+      }
+      Ensure the generated data is directly from the text or a logical summary of it. Generate at least 2-3 different charts if the text allows.
+    `;
+
+    const response = await openai.chat.completions.create({
+        model: "gpt-4o-mini",
         messages: [
-          {
-            role: "system",
-            content: language === "hebrew" 
-              ? "אתה מורה מומחה במתמטיקה ומדעים שיוצר דפי נוסחאות מסודרים. השתמש בעברית תקנית."
-              : "You are an expert math and science teacher creating organized formula sheets. Use clear English."
-          },
-          {
-            role: "user",
-            content: prompt
-          }
+            {
+                role: "system",
+                content: "You are an expert data analyst specializing in creating data visualizations from text. You always respond in valid JSON format."
+            },
+            {
+                role: "user",
+                content: prompt
+            }
         ],
-        temperature: 0.4,
-      }),
+        response_format: { type: "json_object" },
     });
 
-    const data = await response.json();
-    const content = data.choices[0].message.content;
+    const content = response.choices[0].message.content;
     
-    try {
-      const parsedContent = JSON.parse(content);
-      return new Response(JSON.stringify(parsedContent), {
+    return new Response(content, {
         status: 200,
         headers: { "Content-Type": "application/json" },
-      });
-    } catch (parseError) {
-      return new Response(JSON.stringify({ 
-        error: "Failed to parse OpenAI response",
-        rawContent: content 
-      }), {
-        status: 500,
-        headers: { "Content-Type": "application/json" },
-      });
-    }
+    });
 
   } catch (error) {
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
-      headers: { "Content-Type": "application/json" },
+    console.error("Error in generate-formula-sheet:", error);
+    return new Response(JSON.stringify({ error: error.message || 'An unexpected error occurred' }), {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
     });
   }
 });
