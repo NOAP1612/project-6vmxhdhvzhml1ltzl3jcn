@@ -1,0 +1,123 @@
+@layer components {
+  .gradient-text {
+    @apply bg-gradient-to-r from-green-600 to-green-800 bg-clip-text text-transparent font-bold;
+    animation: gradient-shift 3s ease-in-out infinite;
+  }
+
+  .glass-effect {
+    @apply bg-white/95 backdrop-blur-md border border-gray-200 shadow-xl;
+    background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(91, 211, 131, 0.08) 100%);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  .green-accent {
+    @apply text-green-600 border-green-400;
+  }
+
+  .green-gradient-bg {
+    background: linear-gradient(135deg, #5BD383 0%, #29B366 100%);
+  }
+
+  .tech-glow {
+    box-shadow: 0 0 20px rgba(91, 211, 131, 0.4), 0 0 40px rgba(91, 211, 131, 0.2);
+    animation: tech-pulse 2s ease-in-out infinite;
+  }
+
+  .tech-border {
+    @apply border-green-400/50;
+    position: relative;
+  }
+
+  .tech-border::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    padding: 1px;
+    background: linear-gradient(45deg, #5BD383, #29B366, #5BD383);
+    border-radius: inherit;
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask-composite: exclude;
+    animation: border-rotate 3s linear infinite;
+  }
+
+  .tech-bg {
+    background: linear-gradient(135deg, rgba(91, 211, 131, 0.1) 0%, rgba(41, 179, 102, 0.15) 100%);
+    position: relative;
+  }
+
+  .tech-bg::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 50% 50%, rgba(91, 211, 131, 0.1) 0%, transparent 70%);
+    animation: pulse-bg 4s ease-in-out infinite;
+  }
+
+  .floating-element {
+    animation: float-tech 6s ease-in-out infinite;
+  }
+
+  .stagger-animation > * {
+    opacity: 0;
+    transform: translateY(20px);
+    animation: stagger-in 0.6s ease-out forwards;
+  }
+
+  .stagger-animation > *:nth-child(1) { animation-delay: 0.1s; }
+  .stagger-animation > *:nth-child(2) { animation-delay: 0.2s; }
+  .stagger-animation > *:nth-child(3) { animation-delay: 0.3s; }
+  .stagger-animation > *:nth-child(4) { animation-delay: 0.4s; }
+  .stagger-animation > *:nth-child(5) { animation-delay: 0.5s; }
+  .stagger-animation > *:nth-child(6) { animation-delay: 0.6s; }
+
+  .morphing-bg {
+    background: linear-gradient(-45deg, #5BD383, #29B366, #22c55e, #16a34a);
+    background-size: 400% 400%;
+    animation: gradient-morph 8s ease infinite;
+  }
+
+  .data-stream {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .data-stream::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #5BD383, transparent);
+    animation: data-flow 2s linear infinite;
+  }
+
+  .holographic {
+    background: linear-gradient(45deg, 
+      rgba(91, 211, 131, 0.1) 0%, 
+      rgba(41, 179, 102, 0.1) 25%, 
+      rgba(34, 197, 94, 0.1) 50%, 
+      rgba(22, 163, 74, 0.1) 75%, 
+      rgba(91, 211, 131, 0.1) 100%);
+    background-size: 200% 200%;
+    animation: holographic-shift 4s ease-in-out infinite;
+  }
+
+  .neural-network {
+    position: relative;
+  }
+
+  .neural-network::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: 
+      radial-gradient(circle at 20% 20%, rgba(91, 211, 131, 0.3) 1px, transparent 1px),
+      radial-gradient(circle at 80% 80%, rgba(41, 179, 102, 0.3) 1px, transparent 1px),
+      radial-gradient(circle at 40% 60%, rgba(34, 197, 94, 0.3) 1px, transparent 1px);
+    background-size: 50px 50px, 30px 30px, 70px 70px;
+    animation: neural-pulse 6s ease-in-out infinite;
+    opacity: 0.6;
+  }
+}

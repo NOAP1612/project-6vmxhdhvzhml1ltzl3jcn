@@ -1,0 +1,7 @@
+/* Main CSS file that imports all modular CSS files */
+@import './base.css';
+@import './components.css';
+@import './tech-effects.css';
+@import './animations.css';
+@import './animation-classes.css';
+@import './utilities.css';

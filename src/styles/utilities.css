@@ -1,0 +1,142 @@
+/* Enhanced Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(243, 244, 246, 1);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, rgba(91, 211, 131, 0.6) 0%, rgba(41, 179, 102, 0.8) 100%);
+  border-radius: 4px;
+  box-shadow: 0 0 10px rgba(91, 211, 131, 0.3);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, rgba(91, 211, 131, 0.8) 0%, rgba(41, 179, 102, 1) 100%);
+  box-shadow: 0 0 15px rgba(91, 211, 131, 0.5);
+}
+
+/* Enhanced Selection styling */
+::selection {
+  background: rgba(91, 211, 131, 0.3);
+  color: #1f2937;
+  text-shadow: 0 0 10px rgba(91, 211, 131, 0.5);
+}
+
+/* Enhanced Focus styles */
+.focus-tech:focus {
+  outline: none;
+  ring: 2px;
+  ring-color: rgba(91, 211, 131, 0.6);
+  ring-offset: 2px;
+  ring-offset-color: transparent;
+  box-shadow: 0 0 20px rgba(91, 211, 131, 0.4);
+}
+
+/* Special tech text styles */
+.hero-text {
+  @apply text-gray-900 text-2xl md:text-4xl font-bold leading-tight;
+  text-shadow: 0 0 30px rgba(91, 211, 131, 0.3);
+}
+
+.accent-text {
+  @apply text-green-600 text-2xl md:text-4xl font-bold leading-tight;
+  background: linear-gradient(45deg, #5BD383, #29B366);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: gradient-shift 3s ease-in-out infinite;
+}
+
+.subtitle-text {
+  @apply text-gray-700 text-lg md:text-xl font-medium;
+}
+
+/* Tech accent elements */
+.tech-highlight {
+  background: linear-gradient(135deg, rgba(91, 211, 131, 0.15) 0%, rgba(41, 179, 102, 0.2) 100%);
+  border: 1px solid rgba(91, 211, 131, 0.3);
+  box-shadow: 0 0 20px rgba(91, 211, 131, 0.1);
+}
+
+.tech-button {
+  background: linear-gradient(135deg, #5BD383 0%, #29B366 100%);
+  box-shadow: 0 4px 15px rgba(91, 211, 131, 0.4);
+  position: relative;
+  overflow: hidden;
+}
+
+.tech-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  transition: left 0.6s;
+}
+
+.tech-button:hover::before {
+  left: 100%;
+}
+
+.tech-button:hover {
+  background: linear-gradient(135deg, #29B366 0%, #16a34a 100%);
+  box-shadow: 0 8px 25px rgba(91, 211, 131, 0.6), 0 0 30px rgba(91, 211, 131, 0.3);
+  transform: translateY(-3px) scale(1.05);
+}
+
+/* Matrix-like background effect */
+.matrix-bg {
+  position: relative;
+  overflow: hidden;
+}
+
+.matrix-bg::before {
+  content: '';
+  position: absolute;
+  top: -100%;
+  left: 0;
+  width: 100%;
+  height: 200%;
+  background-image: 
+    linear-gradient(90deg, transparent 98%, rgba(91, 211, 131, 0.1) 100%),
+    linear-gradient(0deg, transparent 98%, rgba(91, 211, 131, 0.1) 100%);
+  background-size: 20px 20px;
+  animation: matrix-rain 10s linear infinite;
+  opacity: 0.3;
+}
+
+/* Scan line effect */
+.scan-line {
+  position: relative;
+  overflow: hidden;
+}
+
+.scan-line::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(91, 211, 131, 0.8), transparent);
+  animation: scan-line 3s ease-in-out infinite;
+}
+
+/* Utility classes for tech effects */
+.tech-shadow {
+  box-shadow: 0 10px 30px rgba(91, 211, 131, 0.2), 0 0 20px rgba(91, 211, 131, 0.1);
+}
+
+.tech-border-glow {
+  border: 1px solid rgba(91, 211, 131, 0.4);
+  box-shadow: 0 0 20px rgba(91, 211, 131, 0.2), inset 0 0 20px rgba(91, 211, 131, 0.1);
+}
+
+.tech-text-glow {
+  text-shadow: 0 0 10px rgba(91, 211, 131, 0.5), 0 0 20px rgba(91, 211, 131, 0.3);
+}

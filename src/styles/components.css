@@ -1,0 +1,134 @@
+@layer components {
+  .container {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  .card {
+    @apply bg-white backdrop-blur-md text-gray-900 rounded-xl shadow-lg border border-gray-200;
+    background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(168,85,247,0.05) 100%);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    transform: translateY(0);
+  }
+
+  .card:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15), 0 0 30px rgba(91, 211, 131, 0.3);
+    background: linear-gradient(135deg, rgba(255,255,255,0.98) 0%, rgba(91, 211, 131, 0.08) 100%);
+  }
+
+  .btn {
+    @apply inline-flex items-center justify-center rounded-lg text-sm font-medium transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-transparent;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    transition: left 0.6s;
+  }
+
+  .btn:hover::before {
+    left: 100%;
+  }
+
+  .btn-primary {
+    @apply bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700 shadow-lg hover:shadow-xl transform hover:scale-105 px-6 py-3;
+    box-shadow: 0 4px 15px rgba(34, 197, 94, 0.4);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .btn-primary:hover {
+    box-shadow: 0 8px 25px rgba(34, 197, 94, 0.6), 0 0 20px rgba(34, 197, 94, 0.3);
+    transform: translateY(-2px) scale(1.05);
+  }
+
+  .btn-secondary {
+    @apply bg-white text-gray-900 border border-green-300 hover:bg-green-50 hover:border-green-400 px-6 py-3;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .btn-secondary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(34, 197, 94, 0.2);
+  }
+
+  .input-field {
+    @apply bg-white border border-gray-300 text-gray-900 placeholder-gray-500 rounded-lg px-4 py-3 focus:border-green-400 focus:ring-2 focus:ring-green-400/50;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .input-field:focus {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(34, 197, 94, 0.15);
+  }
+
+  .sidebar-item {
+    @apply flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:text-gray-900 hover:bg-gray-100 transition-all duration-300 cursor-pointer;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .sidebar-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(91, 211, 131, 0.1), transparent);
+    transition: right 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .sidebar-item:hover::before {
+    right: 100%;
+  }
+
+  .sidebar-item:hover {
+    background: linear-gradient(135deg, rgba(243,244,246,1) 0%, rgba(91, 211, 131, 0.12) 100%);
+    transform: translateX(-4px);
+    box-shadow: 0 4px 12px rgba(91, 211, 131, 0.2);
+  }
+
+  .sidebar-item.active {
+    @apply bg-gradient-to-r from-green-100 to-green-200 text-green-900 border-l-4 border-green-500 shadow-lg;
+    background: linear-gradient(135deg, rgba(91, 211, 131, 0.2) 0%, rgba(41, 179, 102, 0.3) 100%);
+    transform: translateX(-4px);
+    box-shadow: 0 4px 15px rgba(91, 211, 131, 0.3);
+  }
+
+  .feature-card {
+    @apply bg-white backdrop-blur-md rounded-xl p-6 border border-gray-200 hover:bg-gray-50 transition-all duration-500 hover:shadow-xl hover:scale-105;
+    background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(91, 211, 131, 0.05) 100%);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .feature-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: conic-gradient(from 0deg, transparent, rgba(91, 211, 131, 0.1), transparent);
+    animation: rotate 4s linear infinite;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .feature-card:hover::before {
+    opacity: 1;
+  }
+
+  .feature-card:hover {
+    background: linear-gradient(135deg, rgba(249,250,251,1) 0%, rgba(91, 211, 131, 0.15) 100%);
+    box-shadow: 0 20px 40px rgba(91, 211, 131, 0.2), 0 0 30px rgba(91, 211, 131, 0.1);
+    transform: translateY(-8px) scale(1.03);
+  }
+}
