@@ -95,7 +95,9 @@ export function QuizGenerator() {
       let description = "לא הצלחנו לחלץ את הטקסט מהקובץ בדרייב. אנא ודא שהקישור תקין והקובץ נגיש.";
       
       if (error instanceof Error) {
-        if (error.message === 'Request timeout') {
+        if (error.message.includes('No domain found for deployment')) {
+          description = "אירעה שגיאת תצורה בשרת. ייתכן שהשירות האחראי על עיבוד קבצי דרייב אינו זמין כרגע. אנא נסה שוב מאוחר יותר.";
+        } else if (error.message === 'Request timeout') {
           description = "הבקשה ארכה יותר מדי זמן. אנא נסה שוב או בדוק את חיבור האינטרנט שלך.";
         } else if (error.message === 'Failed to fetch') {
           description = "אירעה שגיאת רשת. אנא בדוק את חיבור האינטרנט שלך ונסה שוב.";
