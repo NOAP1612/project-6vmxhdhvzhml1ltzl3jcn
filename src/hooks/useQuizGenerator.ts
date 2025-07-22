@@ -42,7 +42,7 @@ export const useQuizGenerator = () => {
         title: "מעלה קובץ...",
         description: "שלב 1 מתוך 2: מעלה את הקובץ לשרת.",
       });
-      const { file_url } = await withTimeout(uploadFile({ file: selectedFile }), 180000); // Increased timeout
+      const { file_url } = await withTimeout(uploadFile({ file: selectedFile }), 300000); // Increased timeout to 5 minutes
       
       setUploadProgress('מעבד את הקובץ...');
       toast({
@@ -56,7 +56,7 @@ export const useQuizGenerator = () => {
         required: ["text_content"],
       };
 
-      const result = await withTimeout(extractDataFromUploadedFile({ file_url, json_schema: schema }), 420000); // Increased timeout
+      const result = await withTimeout(extractDataFromUploadedFile({ file_url, json_schema: schema }), 600000); // Increased timeout to 10 minutes
 
       if (result.status === 'success' && result.output && typeof (result.output as any).text_content === 'string') {
 // ... keep existing code (success handling)
