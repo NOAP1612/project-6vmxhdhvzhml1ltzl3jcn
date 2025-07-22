@@ -3,15 +3,18 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Slider } from "@/components/ui/slider";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { readTextOutLoud } from "@/functions";
-import { Volume2, Loader2, Play, Gauge } from "lucide-react";
+import { Volume2, Loader2, Play, Gauge, Mic } from "lucide-react";
 
 export function TextToSpeech() {
   const [text, setText] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [speed, setSpeed] = useState([1.0]);
+  const [selectedVoice, setSelectedVoice] = useState("alloy");
   const { toast } = useToast();
 
   const handleGenerateSpeech = async () => {
@@ -30,7 +33,7 @@ export function TextToSpeech() {
     try {
       const result = await readTextOutLoud({ 
         text, 
-        voice: "ash",
+        voice: selectedVoice,
         speed: speed[0]
       });
 
@@ -67,6 +70,17 @@ export function TextToSpeech() {
     return "מהיר ביותר";
   };
 
+  const getVoiceDescription = (voice: string) => {
+    switch (voice) {
+      case "alloy":
+        return "קול נייטרלי ובהיר";
+      case "sage":
+        return "קול רך ומתון";
+      default:
+        return "";
+    }
+  };
+
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="flex items-center gap-3 mb-6">
@@ -75,11 +89,41 @@ export function TextToSpeech() {
         </div>
         <div>
           <h1 className="text-3xl font-bold text-gray-900">קריאה בקול</h1>
-          <p className="text-gray-600">המר טקסט לדיבור עם קול Ash</p>
+          <p className="text-gray-600">המר טקסט לדיבור עם קולות AI מתקדמים</p>
         </div>
       </div>
 
-      {/* Speed Control - Prominent outside the main card */}
+      {/* Voice Selection */}
+      <Card className="bg-gradient-to-r from-green-50 to-emerald-50 border-green-200">
+        <CardContent className="pt-6">
+          <div className="flex items-center gap-4 mb-4">
+            <Mic className="w-5 h-5 text-green-600" />
+            <span className="font-medium text-green-900">בחירת קול:</span>
+          </div>
+          <RadioGroup value={selectedVoice} onValueChange={setSelectedVoice} className="grid grid-cols-2 gap-4">
+            <div className="flex items-center space-x-2 space-x-reverse">
+              <RadioGroupItem value="alloy" id="alloy" disabled={isLoading} />
+              <Label htmlFor="alloy" className="cursor-pointer">
+                <div>
+                  <div className="font-medium text-green-900">Alloy</div>
+                  <div className="text-sm text-green-700">{getVoiceDescription("alloy")}</div>
+                </div>
+              </Label>
+            </div>
+            <div className="flex items-center space-x-2 space-x-reverse">
+              <RadioGroupItem value="sage" id="sage" disabled={isLoading} />
+              <Label htmlFor="sage" className="cursor-pointer">
+                <div>
+                  <div className="font-medium text-green-900">Sage</div>
+                  <div className="text-sm text-green-700">{getVoiceDescription("sage")}</div>
+                </div>
+              </Label>
+            </div>
+          </RadioGroup>
+        </CardContent>
+      </Card>
+
+      {/* Speed Control */}
       <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
         <CardContent className="pt-6">
           <div className="flex items-center gap-4">
