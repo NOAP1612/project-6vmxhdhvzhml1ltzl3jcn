@@ -1,124 +1,47 @@
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarHeader,
-  SidebarFooter,
-} from "@/components/ui/sidebar";
-import { 
-  Brain, 
-  FileQuestion, 
-  Table, 
-  Calendar, 
-  MessageSquare, 
-  CreditCard, 
-  Calculator,
-  Volume2,
-  Home,
-  Settings
-} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { LayoutDashboard, FileQuestion, BarChart3, Table2 } from "lucide-react";
 
 interface AppSidebarProps {
   activeFeature: string;
   setActiveFeature: (feature: string) => void;
 }
 
-const menuItems = [
-  {
-    id: "dashboard",
-    title: "לוח בקרה",
-    icon: Home,
-  },
-  {
-    id: "quiz",
-    title: "יצירת שאלון",
-    icon: FileQuestion,
-  },
-  {
-    id: "summary",
-    title: "טבלת סיכום",
-    icon: Table,
-  },
-  {
-    id: "schedule",
-    title: "גאנט לימודים",
-    icon: Calendar,
-  },
-  {
-    id: "post",
-    title: "פוסט לימודי",
-    icon: MessageSquare,
-  },
-  {
-    id: "flashcards",
-    title: "כרטיסיות זיכרון",
-    icon: CreditCard,
-  },
-  {
-    id: "formulas",
-    title: "דף נוסחאות",
-    icon: Calculator,
-  },
-  {
-    id: "tts",
-    title: "קריאה בקול",
-    icon: Volume2,
-  },
-];
+const SidebarButton = ({ icon, label, isActive, onClick }: { icon: React.ReactNode, label: string, isActive: boolean, onClick: () => void }) => (
+  <Button
+    variant={isActive ? "secondary" : "ghost"}
+    className="w-full justify-start gap-2"
+    onClick={onClick}
+  >
+    {icon}
+    <span className="font-semibold">{label}</span>
+  </Button>
+);
 
 export function AppSidebar({ activeFeature, setActiveFeature }: AppSidebarProps) {
+  const features = [
+    { id: 'dashboard', label: 'לוח בקרה', icon: <LayoutDashboard className="w-5 h-5" /> },
+    { id: 'quiz-generator', label: 'מחולל שאלונים', icon: <FileQuestion className="w-5 h-5" /> },
+    { id: 'summary-table', label: 'טבלאות סיכום', icon: <Table2 className="w-5 h-5" /> },
+    { id: 'chart-generator', label: 'מחולל תרשימים', icon: <BarChart3 className="w-5 h-5" /> },
+  ];
+
   return (
-    <Sidebar side="right" className="border-l border-border/40">
-      <SidebarHeader className="p-6">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
-            <Brain className="w-6 h-6 text-white" />
-          </div>
-          <div>
-            <h2 className="text-lg font-semibold text-gray-900">פלטפורמת למידה</h2>
-            <p className="text-sm text-gray-500">חכמה ומתקדמת</p>
-          </div>
-        </div>
-      </SidebarHeader>
-      
-      <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel className="text-gray-600 font-medium">כלי למידה</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {menuItems.map((item) => (
-                <SidebarMenuItem key={item.id}>
-                  <SidebarMenuButton 
-                    asChild
-                    isActive={activeFeature === item.id}
-                    className="w-full justify-start hover:bg-blue-50 hover:text-blue-700 transition-colors"
-                  >
-                    <button 
-                      onClick={() => setActiveFeature(item.id)}
-                      className="flex items-center gap-3 w-full"
-                    >
-                      <item.icon className="w-5 h-5" />
-                      <span className="font-medium">{item.title}</span>
-                    </button>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-      </SidebarContent>
-      
-      <SidebarFooter className="p-4">
-        <div className="flex items-center gap-2 text-sm text-gray-500">
-          <Settings className="w-4 h-4" />
-          <span>מופעל על ידי OpenAI</span>
-        </div>
-      </SidebarFooter>
-    </Sidebar>
+    <div className="w-64 bg-white/80 backdrop-blur-sm p-4 border-l-2 border-gray-100 h-screen sticky top-0">
+      <div className="flex items-center gap-2 mb-6">
+        <img src="/logo.svg" alt="Logo" className="w-8 h-8" />
+        <h2 className="text-xl font-bold text-gray-800">AI Studio</h2>
+      </div>
+      <div className="space-y-2">
+        {features.map(feature => (
+          <SidebarButton
+            key={feature.id}
+            icon={feature.icon}
+            label={feature.label}
+            isActive={activeFeature === feature.id}
+            onClick={() => setActiveFeature(feature.id)}
+          />
+        ))}
+      </div>
+    </div>
   );
 }
