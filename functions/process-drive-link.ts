@@ -1,4 +1,4 @@
-import { GoogleWorkspace } from "@superdevhq/google-workspace";
+import { GoogleWorkspace } from "npm:@superdevhq/google-workspace";
 
 const extractFileIdFromUrl = (url: string): string | null => {
     const patterns = [
