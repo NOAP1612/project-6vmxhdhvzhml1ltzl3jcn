@@ -3,6 +3,7 @@ import { useToast } from "@/hooks/use-toast";
 import { invokeLLM, uploadFile, extractDataFromUploadedFile } from "@/integrations/core";
 
 export interface QuizQuestion {
+// ... keep existing code (interface definition)
   question: string;
   options: string[];
   correctAnswer: string;
@@ -13,20 +14,24 @@ export interface QuizQuestion {
 }
 
 export interface QuizData {
+// ... keep existing code (interface definition)
   title: string;
   questions: QuizQuestion[];
 }
 
 export const useQuizGenerator = () => {
   const [sourceText, setSourceText] = useState('');
-  // ... keep existing code (state declarations)
+  const [fileName, setFileName] = useState('');
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const [quizData, setQuizData] = useState<QuizData | null>(null);
   const [userAnswers, setUserAnswers] = useState<Record<number, string>>({});
   const [isSubmitted, setIsSubmitted] = useState(false); // This will now represent if the whole quiz is "finished"
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
-  // ... keep existing code (handleFileChange)
+  // ... keep existing code (handleFileChange function)
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = event.target.files?.[0];
     if (!selectedFile) return;
@@ -74,7 +79,7 @@ export const useQuizGenerator = () => {
     }
   };
 
-  // ... keep existing code (handleGenerateQuiz)
+  // ... keep existing code (handleGenerateQuiz function)
   const handleGenerateQuiz = async () => {
     if (!sourceText.trim()) {
       toast({ title: "שגיאה", description: "אנא הזן טקסט או העלה קובץ כדי ליצור שאלון.", variant: "destructive" });
@@ -124,10 +129,12 @@ export const useQuizGenerator = () => {
   };
 
   const handleAnswerChange = (questionIndex: number, answer: string) => {
+// ... keep existing code (handleAnswerChange function)
     setUserAnswers(prev => ({ ...prev, [questionIndex]: answer }));
   };
 
   const handleCheckAnswer = (questionIndex: number) => {
+// ... keep existing code (handleCheckAnswer function)
     if (!quizData || !userAnswers[questionIndex]) return;
 
     const updatedQuestions = [...quizData.questions];
@@ -156,7 +163,7 @@ export const useQuizGenerator = () => {
   };
 
   const handleReset = () => {
-    // ... keep existing code (handleReset function)
+// ... keep existing code (handleReset function)
     setSourceText('');
     setFileName('');
     setQuizData(null);
