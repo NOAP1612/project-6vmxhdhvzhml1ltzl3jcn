@@ -16,28 +16,38 @@ Deno.serve(async (req) => {
     }
 
     const prompt = `
-      Based on the following text about "${topic}", create a presentation with exactly ${slideCount} slides.
-      For each slide, provide a title, a few bullet points (3-5), and a suggestion for a relevant visual element (like a type of chart, an icon, or a concept for an image).
-      The presentation should have a logical flow, starting with an introduction and ending with a conclusion or summary.
-      The tone should be professional and informative.
+      בהתבסס על הטקסט הבא בנושא "${topic}", צור מצגת בעברית עם בדיוק ${slideCount} שקופיות.
+      לכל שקופית, ספק כותרת, מספר נקודות עיקריות (3-5), והצעה לאלמנט חזותי רלוונטי.
+      
+      הנחיות חשובות:
+      - כל התוכן חייב להיות בעברית
+      - השקופיות צריכות להיות ממורכזות ומסודרות בצורה לוגית
+      - התחל עם שקופית פתיחה וסיים עם סיכום או מסקנות
+      - הטון צריך להיות מקצועי ואינפורמטיבי
+      - עבור כל שקופית, הצע אלמנט חזותי מתאים:
+        * גרף (עמודות, עוגה, קו) אם יש נתונים מספריים
+        * תמונה רלוונטית לנושא
+        * איקון או סמל מתאים
+        * דיאגרמה או תרשים זרימה אם מתאים
+      - לא חובה שלכל שקופית יהיה אלמנט חזותי, רק כשזה מוסיף ערך
 
-      Text to analyze:
+      הטקסט לניתוח:
       ---
       ${text}
       ---
 
-      Please return the output in a valid JSON format with the following structure:
+      החזר את התוצאה בפורמט JSON תקין עם המבנה הבא:
       {
-        "title": "Main title of the presentation",
+        "title": "כותרת ראשית של המצגת בעברית",
         "slides": [
           {
-            "title": "Slide title",
+            "title": "כותרת השקופית בעברית",
             "content": [
-              "Bullet point 1",
-              "Bullet point 2",
-              "Bullet point 3"
+              "נקודה עיקרית 1",
+              "נקודה עיקרית 2", 
+              "נקודה עיקרית 3"
             ],
-            "visualSuggestion": "Description of a suggested visual (e.g., 'Bar chart comparing sales figures', 'Icon of a lightbulb for new ideas')"
+            "visualSuggestion": "תיאור של האלמנט החזותי המוצע (לדוגמה: 'גרף עמודות המשווה נתוני מכירות', 'תמונה של נורה לרעיונות חדשים', 'דיאגרמת זרימה של התהליך')"
           }
         ]
       }
@@ -46,7 +56,10 @@ Deno.serve(async (req) => {
     const response = await openai.chat.completions.create({
       model: "gpt-4o",
       messages: [
-        { role: "system", content: "You are an expert in creating clear and concise presentations." },
+        { 
+          role: "system", 
+          content: "אתה מומחה ביצירת מצגות ברורות ומקצועיות בעברית. אתה יוצר תוכן ממורכז ומסודר עם הצעות חזותיות מתאימות." 
+        },
         { role: "user", content: prompt },
       ],
       response_format: { type: "json_object" },
