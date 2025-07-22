@@ -5,9 +5,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { FileQuestion, Loader2, CheckCircle, Upload, X, Clock } from "lucide-react";
+import { FileQuestion, Loader2, CheckCircle, Upload, X, Clock, Link } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { createQuizQuestions } from "@/functions";
+import { createQuizQuestions, processDriveLink } from "@/functions";
 import { uploadFile, extractDataFromUploadedFile } from "@/integrations/core";
 
 interface Question {
@@ -29,6 +29,8 @@ export function QuizGenerator() {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState('');
   const [fileName, setFileName] = useState('');
+  const [driveLink, setDriveLink] = useState('');
+  const [isProcessingDrive, setIsProcessingDrive] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
@@ -39,6 +41,83 @@ export function QuizGenerator() {
     });
     
     return Promise.race([promise, timeoutPromise]);
+  };
+
+  const handleDriveLinkProcess = async () => {
+    if (!driveLink.trim()) {
+      toast({
+        title: "שגיאה",
+        description: "אנא הזן קישור לקובץ בדרייב",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validate Google Drive link format
+    const drivePatterns = [
+      /drive\.google\.com\/file\/d\/[a-zA-Z0-9-_]+/,
+      /drive\.google\.com\/open\?id=[a-zA-Z0-9-_]+/,
+      /docs\.google\.com\/document\/d\/[a-zA-Z0-9-_]+/
+    ];
+
+    const isValidDriveLink = drivePatterns.some(pattern => pattern.test(driveLink));
+    
+    if (!isValidDriveLink) {
+      toast({
+        title: "קישור לא תקין",
+        description: "אנא הזן קישור תקין לקובץ בגוגל דרייב",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsProcessingDrive(true);
+    setTopic('');
+    setQuestions([]);
+    setFileName('');
+
+    try {
+      toast({
+        title: "מעבד קישור דרייב...",
+        description: "מחלץ טקסט מהקובץ בדרייב. זה עשוי לקחת מספר רגעים...",
+      });
+
+      const result = await withTimeout(
+        processDriveLink({ driveLink }),
+        180000 // 3 minutes timeout
+      );
+
+      if (result.success && result.text_content) {
+        setTopic(result.text_content);
+        toast({
+          title: "הצלחה!",
+          description: "הטקסט מהקובץ בדרייב חולץ בהצלחה ומוכן ליצירת שאלון.",
+        });
+      } else {
+        throw new Error(result.error || "Failed to extract text from Drive file");
+      }
+    } catch (error) {
+      console.error("Error processing drive link:", error);
+      let description = "לא הצלחנו לחלץ את הטקסט מהקובץ בדרייב. אנא ודא שהקישור תקין והקובץ נגיש.";
+      
+      if (error instanceof Error) {
+        if (error.message === 'Request timeout') {
+          description = "הבקשה ארכה יותר מדי זמן. אנא נסה שוב או בדוק את חיבור האינטרנט שלך.";
+        } else if (error.message === 'Failed to fetch') {
+          description = "אירעה שגיאת רשת. אנא בדוק את חיבור האינטרנט שלך ונסה שוב.";
+        } else {
+          description = `אירעה שגיאה: ${error.message}`;
+        }
+      }
+      
+      toast({
+        title: "שגיאה בעיבוד קישור הדרייב",
+        description: description,
+        variant: "destructive",
+      });
+    } finally {
+      setIsProcessingDrive(false);
+    }
   };
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -58,6 +137,7 @@ export function QuizGenerator() {
     setIsUploading(true);
     setTopic('');
     setQuestions([]);
+    setDriveLink('');
     setUploadProgress('מעלה קובץ...');
 
     try {
@@ -142,6 +222,7 @@ export function QuizGenerator() {
     setFileName('');
     setTopic('');
     setUploadProgress('');
+    setDriveLink('');
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -207,16 +288,74 @@ export function QuizGenerator() {
         <CardHeader>
           <CardTitle>הגדרות השאלון</CardTitle>
           <CardDescription>
-            הזן את פרטי השאלון שברצונך ליצור, או העלה קובץ PDF כדי ליצור שאלון מהתוכן שלו.
+            הזן את פרטי השאלון שברצונך ליצור, או העלה קובץ PDF או הדבק קישור לדרייב כדי ליצור שאלון מהתוכן שלו.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
+          {/* Google Drive Link Section */}
           <div className="space-y-2">
-            <Label>יצירה מתוך קובץ PDF (אופציונלי)</Label>
+            <Label>קישור לקובץ בגוגל דרייב (אופציונלי)</Label>
+            <div className="flex items-center gap-2">
+              <Input
+                placeholder="הדבק כאן קישור לקובץ PDF בגוגל דרייב"
+                value={driveLink}
+                onChange={(e) => setDriveLink(e.target.value)}
+                disabled={isProcessingDrive || isUploading}
+                className="flex-grow"
+              />
+              <Button 
+                onClick={handleDriveLinkProcess}
+                disabled={isProcessingDrive || isUploading || !driveLink.trim()}
+                variant="outline"
+                className="shrink-0"
+              >
+                {isProcessingDrive ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Link className="w-4 h-4" />
+                )}
+              </Button>
+            </div>
+            
+            {isProcessingDrive && (
+              <div className="flex items-center justify-center p-4 bg-green-50 rounded-lg border border-green-200">
+                <div className="flex items-center gap-3">
+                  <div className="relative">
+                    <Loader2 className="w-6 h-6 animate-spin text-green-600" />
+                    <div className="absolute inset-0 rounded-full border-2 border-green-200 animate-pulse"></div>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-green-800 font-medium">מעבד קישור דרייב...</p>
+                    <p className="text-green-600 text-sm flex items-center gap-1">
+                      <Clock className="w-3 h-3" />
+                      אנא המתן, זה עשוי לקחת מספר רגעים...
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            <p className="text-xs text-gray-500">
+              הדבק קישור לקובץ PDF בגוגל דרייב. ודא שהקובץ נגיש לצפייה ציבורית.
+            </p>
+          </div>
+
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-white px-2 text-muted-foreground">או</span>
+            </div>
+          </div>
+
+          {/* File Upload Section */}
+          <div className="space-y-2">
+            <Label>העלאת קובץ PDF (אופציונלי)</Label>
             <div className="flex items-center gap-2">
               <Label
                 htmlFor="pdf-upload"
-                className={`flex-grow flex items-center justify-center gap-2 cursor-pointer rounded-md border-2 border-dashed p-4 text-center text-gray-500 transition-colors hover:border-blue-500 hover:bg-blue-50 ${isUploading ? 'cursor-not-allowed bg-gray-100' : 'border-gray-300'}`}
+                className={`flex-grow flex items-center justify-center gap-2 cursor-pointer rounded-md border-2 border-dashed p-4 text-center text-gray-500 transition-colors hover:border-blue-500 hover:bg-blue-50 ${isUploading || isProcessingDrive ? 'cursor-not-allowed bg-gray-100' : 'border-gray-300'}`}
               >
                 {isUploading ? (
                   <>
@@ -236,17 +375,16 @@ export function QuizGenerator() {
                 className="hidden"
                 onChange={handleFileChange}
                 accept="application/pdf"
-                disabled={isUploading}
+                disabled={isUploading || isProcessingDrive}
                 ref={fileInputRef}
               />
-              {fileName && !isUploading && (
+              {(fileName || driveLink) && !isUploading && !isProcessingDrive && (
                 <Button variant="ghost" size="icon" onClick={handleClearFile} className="shrink-0">
                   <X className="w-5 h-5" />
                 </Button>
               )}
             </div>
             
-            {/* כפתור טעינה נפרד */}
             {isUploading && (
               <div className="flex items-center justify-center p-4 bg-blue-50 rounded-lg border border-blue-200">
                 <div className="flex items-center gap-3">
@@ -286,7 +424,7 @@ export function QuizGenerator() {
                 value={topic}
                 onChange={(e) => setTopic(e.target.value)}
                 className="h-32"
-                disabled={isUploading}
+                disabled={isUploading || isProcessingDrive}
               />
             </div>
 
@@ -336,7 +474,7 @@ export function QuizGenerator() {
 
           <Button 
             onClick={handleGenerate} 
-            disabled={isLoading || isUploading}
+            disabled={isLoading || isUploading || isProcessingDrive}
             className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600"
           >
             {isLoading ? (
@@ -354,6 +492,7 @@ export function QuizGenerator() {
         </CardContent>
       </Card>
 
+      {/* ... keep existing code (questions display section) */}
       {questions.length > 0 && (
         <Card>
           <CardHeader>
