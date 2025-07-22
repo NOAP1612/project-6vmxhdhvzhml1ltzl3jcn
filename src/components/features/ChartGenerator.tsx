@@ -1,15 +1,15 @@
-import { BarChart, Bar, PieChart, Pie, LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell } from 'recharts';
-import { useChartGenerator, ChartData } from '@/hooks/useChartGenerator';
+import { BarChart, Bar, PieChart, Pie, LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell } from "recharts";
+import { useChartGenerator, ChartData } from "@/hooks/useChartGenerator";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card';
-import { Upload, X, Loader2 } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Upload, X, Loader2 } from "lucide-react";
 
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d'];
+const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884d8", "#82ca9d"];
 
 const renderChart = (chart: ChartData) => {
   switch (chart.type) {
-    case 'bar':
+    case "bar":
       return (
         <ResponsiveContainer width="100%" height={300}>
           <BarChart data={chart.data}>
@@ -22,7 +22,7 @@ const renderChart = (chart: ChartData) => {
           </BarChart>
         </ResponsiveContainer>
       );
-    case 'pie':
+    case "pie":
       return (
         <ResponsiveContainer width="100%" height={300}>
           <PieChart>
@@ -36,7 +36,7 @@ const renderChart = (chart: ChartData) => {
           </PieChart>
         </ResponsiveContainer>
       );
-    case 'line':
+    case "line":
       return (
         <ResponsiveContainer width="100%" height={300}>
           <LineChart data={chart.data}>
@@ -49,7 +49,7 @@ const renderChart = (chart: ChartData) => {
           </LineChart>
         </ResponsiveContainer>
       );
-    case 'area':
+    case "area":
         return (
           <ResponsiveContainer width="100%" height={300}>
             <AreaChart data={chart.data}>
@@ -120,7 +120,7 @@ export function ChartGenerator() {
           <div className="flex gap-4">
             <Button onClick={handleGenerateCharts} disabled={isLoading || isUploading || !sourceText}>
               {isLoading ? <Loader2 className="ml-2 h-4 w-4 animate-spin" /> : null}
-              {isLoading ? 'יוצר גרפים...' : 'צור גרפים'}
+              {isLoading ? "יוצר גרפים..." : "צור גרפים"}
             </Button>
             <Button variant="outline" onClick={handleReset} disabled={isLoading || isUploading}>
               נקה
