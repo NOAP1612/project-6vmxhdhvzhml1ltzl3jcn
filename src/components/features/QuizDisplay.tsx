@@ -31,7 +31,8 @@ const getOptionClassName = (
 };
 
 const formatQuestion = (question: string) => {
-  const cleanedQuestion = question.trim().replace(/\?$/g, '');
+  // Remove existing question marks at the end and then add one.
+  const cleanedQuestion = question.trim().replace(/\?+$/, '');
   return `${cleanedQuestion}?`;
 };
 
@@ -51,6 +52,20 @@ export function QuizDisplay({
     <Card className="animate-fade-in" dir="rtl">
       <CardHeader>
 // ... keep existing code (CardHeader content)
+        <div className="flex justify-between items-start">
+          <div>
+            <CardTitle className="text-2xl">{quizData.title}</CardTitle>
+            {allQuestionsChecked && (
+              <p className="text-lg font-bold mt-2 text-blue-600">
+                הציון הסופי שלך: {score} / {quizData.questions.length}
+              </p>
+            )}
+          </div>
+          <Button onClick={onReset} variant="outline">
+            <RotateCw className="w-4 h-4 ml-2" />
+            התחל מחדש
+          </Button>
+        </div>
       </CardHeader>
       <CardContent className="space-y-6">
         {quizData.questions.map((q, index) => (
@@ -65,7 +80,10 @@ export function QuizDisplay({
                     <AlertTitle className="font-bold text-lg mb-4 text-right">{formatQuestion(q.question)}</AlertTitle>
                     <AlertDescription>
                     <RadioGroup
-// ... keep existing code (RadioGroup props)
+                        value={userAnswers[index] || ""}
+                        onValueChange={(value) => onAnswerChange(index, value)}
+                        disabled={q.isChecked}
+                        className="space-y-3"
                     >
                         {q.options.map((option, i) => (
                         <div key={i} className={`flex items-center space-x-2 rounded-md border p-3 transition-all ${getOptionClassName(option, q)}`}>
@@ -75,10 +93,15 @@ export function QuizDisplay({
                         ))}
                     </RadioGroup>
                     {!q.isChecked && (
-// ... keep existing code (check answer button)
+                        <Button onClick={() => onCheckAnswer(index)} disabled={!userAnswers[index]} className="mt-4">
+                            בדוק תשובה
+                        </Button>
                     )}
                     {q.isChecked && (
-// ... keep existing code (explanation block)
+                        <div className="mt-4 p-3 bg-gray-50 rounded-md border text-sm text-right">
+                            <p className="flex items-center font-semibold"><Lightbulb className="w-4 h-4 ml-2 text-yellow-500" /> הסבר:</p>
+                            <p className="mt-1">{q.explanation}</p>
+                        </div>
                     )}
                     </AlertDescription>
                 </div>
