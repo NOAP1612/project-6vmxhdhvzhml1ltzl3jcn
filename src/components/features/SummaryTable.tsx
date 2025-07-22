@@ -9,6 +9,7 @@ import { useSummaryTable } from "@/hooks/useSummaryTable";
 import { FileUpload } from "./FileUpload";
 import { ConceptsManager } from "./ConceptsManager";
 import { SummaryTableDisplay } from "./SummaryTableDisplay";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 export function SummaryTable() {
   const {
@@ -31,6 +32,8 @@ export function SummaryTable() {
     handleExtractConcepts,
     handleGenerate,
   } = useSummaryTable();
+
+  const isExtractDisabled = isExtractingConcepts || isUploading || (!!fileName && !sourceText.trim());
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -108,24 +111,46 @@ export function SummaryTable() {
           </div>
 
           {(sourceText.trim() || fileName) && topic.trim() && (
-            <Button
-              onClick={handleExtractConcepts}
-              disabled={isExtractingConcepts}
-              variant="outline"
-              className="w-full border-green-500 text-green-600 hover:bg-green-50"
-            >
-              {isExtractingConcepts ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  מחלץ מושגים...
-                </>
-              ) : (
-                <>
-                  <Sparkles className="w-4 h-4 mr-2" />
-                  חלץ מושגים אוטומטית מהטקסט
-                </>
-              )}
-            </Button>
+            <TooltipProvider>
+              <Tooltip delayDuration={200}>
+                <TooltipTrigger asChild>
+                  <div className="w-full">
+                    <Button
+                      onClick={handleExtractConcepts}
+                      disabled={isExtractDisabled}
+                      variant="outline"
+                      className="w-full border-green-500 text-green-600 hover:bg-green-50 disabled:cursor-not-allowed"
+                    >
+                      {isExtractingConcepts ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          מחלץ מושגים...
+                        </>
+                      ) : isUploading ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          מעבד קובץ, נא להמתין...
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles className="w-4 h-4 mr-2" />
+                          חלץ מושגים אוטומטית מהטקסט
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </TooltipTrigger>
+                {isExtractDisabled && (
+                  <TooltipContent>
+                    <p>
+                      {isUploading
+                        ? "יש להמתין לסיום עיבוד הקובץ."
+                        : "הכפתור יהפוך לפעיל לאחר שהטקסט יחולץ מהקובץ."}
+                    </p>
+                  </TooltipContent>
+                )}
+              </Tooltip>
+            </TooltipProvider>
           )}
 
           <ConceptsManager
