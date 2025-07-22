@@ -35,7 +35,7 @@ export function PresentationGenerator() {
     <div className="space-y-6">
       <div className="text-center">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">יצירת מצגות</h1>
-        <p className="text-gray-600">צור מצגות מקצועיות מטקסט או קבצי PDF עם גרפים אוטומטיים</p>
+        <p className="text-gray-600">צור מצגות מקצועיות מטקסט או קבצי PDF עם 3 גרפים שונים</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -76,7 +76,7 @@ export function PresentationGenerator() {
                 </SelectContent>
               </Select>
               <p className="text-xs text-gray-500">
-                📊 גרפים יתווספו אוטומטית כל 3 שקופיות
+                📊 יתווספו 3 גרפים שונים: עמודות, עוגה ודיאגרמה רדאר
               </p>
             </div>
 
@@ -215,7 +215,9 @@ export function PresentationGenerator() {
                       {slide.visual?.type === 'chart' && (
                         <Badge variant="secondary" className="text-xs">
                           <BarChart3 className="h-3 w-3 mr-1" />
-                          גרף
+                          גרף {slide.visual.data?.type === 'bar' ? 'עמודות' : 
+                               slide.visual.data?.type === 'pie' ? 'עוגה' : 
+                               slide.visual.data?.type === 'radar' ? 'רדאר' : ''}
                         </Badge>
                       )}
                     </CardTitle>
@@ -231,11 +233,7 @@ export function PresentationGenerator() {
                         📊 {slide.visual.data.title}
                       </Badge>
                     )}
-                    {slide.visualSuggestion && !slide.visual && (
-                      <Badge variant="outline" className="text-xs">
-                        💡 {slide.visualSuggestion}
-                      </Badge>
-                    )}
+                    {/* Removed visual suggestion completely */}
                   </CardContent>
                 </Card>
               ))}

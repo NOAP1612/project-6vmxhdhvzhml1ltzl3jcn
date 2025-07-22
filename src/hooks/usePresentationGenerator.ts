@@ -7,12 +7,12 @@ import { ChartData } from '@/hooks/useChartGenerator';
 export interface Slide {
   title: string;
   content: string[];
-  visualSuggestion: string; // This will be deprecated but kept for safety
   visual: {
     type: 'chart' | 'image';
     data?: ChartData;
     url?: string;
   } | null;
+  // Removed visualSuggestion completely
 }
 
 export interface PresentationData {
@@ -159,9 +159,10 @@ export const usePresentationGenerator = () => {
 
       if (result && result.slides && Array.isArray(result.slides)) {
         setPresentationData(result as PresentationData);
+        const chartCount = result.slides.filter((s: any) => s.visual?.type === 'chart').length;
         toast({
           title: "הצלחה!",
-          description: `נוצרה מצגת עם ${result.slides.length} שקופיות`,
+          description: `נוצרה מצגת עם ${result.slides.length} שקופיות ו-${chartCount} גרפים`,
         });
       } else {
         throw new Error("Invalid presentation data received");

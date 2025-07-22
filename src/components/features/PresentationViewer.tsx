@@ -58,7 +58,9 @@ export function PresentationViewer({ presentation, theme, onClose }: Presentatio
           <h2 className="text-white font-semibold">{presentation.title}</h2>
           {currentSlideData.visual?.type === 'chart' && (
             <Badge variant="outline" className="text-white border-white">
-              📊 גרף
+              📊 גרף {currentSlideData.visual.data?.type === 'bar' ? 'עמודות' : 
+                     currentSlideData.visual.data?.type === 'pie' ? 'עוגה' : 
+                     currentSlideData.visual.data?.type === 'radar' ? 'רדאר' : ''}
             </Badge>
           )}
         </div>
@@ -89,7 +91,7 @@ export function PresentationViewer({ presentation, theme, onClose }: Presentatio
               ))}
             </div>
 
-            {/* Chart Display */}
+            {/* Chart Display - Only show if chart exists */}
             {currentSlideData.visual?.type === 'chart' && currentSlideData.visual.data && (
               <PresentationChart 
                 chartData={currentSlideData.visual.data} 
@@ -97,14 +99,7 @@ export function PresentationViewer({ presentation, theme, onClose }: Presentatio
               />
             )}
 
-            {/* Visual Suggestion (fallback) */}
-            {currentSlideData.visualSuggestion && !currentSlideData.visual && (
-              <div className="mt-8 p-4 bg-white bg-opacity-20 rounded-lg">
-                <p className="text-sm opacity-90">
-                  💡 הצעה חזותית: {currentSlideData.visualSuggestion}
-                </p>
-              </div>
-            )}
+            {/* No visual suggestion fallback - completely removed */}
           </CardContent>
         </Card>
       </div>
