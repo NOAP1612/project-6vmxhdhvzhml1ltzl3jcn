@@ -1,7 +1,8 @@
+import { useRef } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2, Upload, X, Clock } from "lucide-react";
+import { Upload, File as FileIcon, X, Loader2 } from "lucide-react";
 
 interface FileUploadProps {
   fileName: string;
@@ -18,63 +19,56 @@ export function FileUpload({
   uploadProgress,
   fileInputRef,
   onFileChange,
-  onClearFile
+  onClearFile,
 }: FileUploadProps) {
+  const triggerFileSelect = () => fileInputRef.current?.click();
+
   return (
     <div className="space-y-2">
-      <Label>העלאת קובץ PDF (אופציונלי)</Label>
-      <div className="flex items-center gap-2">
-        <Label
-          htmlFor="pdf-upload"
-          className={`flex-grow flex items-center justify-center gap-2 cursor-pointer rounded-md border-2 border-dashed p-4 text-center text-gray-500 transition-colors hover:border-green-500 hover:bg-green-50 ${isUploading ? 'cursor-not-allowed bg-gray-100' : 'border-gray-300'}`}
+      <Label>העלאת קובץ (PDF)</Label>
+      <Input
+        type="file"
+        ref={fileInputRef}
+        onChange={onFileChange}
+        className="hidden"
+        accept=".pdf"
+        disabled={isUploading}
+      />
+      {!fileName ? (
+        <Button
+          onClick={triggerFileSelect}
+          variant="outline"
+          className="w-full border-dashed"
+          disabled={isUploading}
         >
           {isUploading ? (
             <>
-              <Loader2 className="w-5 h-5 animate-spin" />
-              <span>{uploadProgress}</span>
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              {uploadProgress || 'מעלה...'}
             </>
           ) : (
             <>
-              <Upload className="w-5 h-5" />
-              <span>{fileName || 'לחץ לבחירת קובץ PDF'}</span>
+              <Upload className="w-4 h-4 mr-2" />
+              בחר קובץ או גרור לכאן
             </>
           )}
-        </Label>
-        <Input
-          id="pdf-upload"
-          type="file"
-          className="hidden"
-          onChange={onFileChange}
-          accept="application/pdf"
-          disabled={isUploading}
-          ref={fileInputRef}
-        />
-        {fileName && !isUploading && (
-          <Button variant="ghost" size="icon" onClick={onClearFile} className="shrink-0">
-            <X className="w-5 h-5" />
-          </Button>
-        )}
-      </div>
-      
-      {isUploading && (
-        <div className="flex items-center justify-center p-4 bg-green-50 rounded-lg border border-green-200">
-          <div className="flex items-center gap-3">
-            <div className="relative">
-              <Loader2 className="w-6 h-6 animate-spin text-green-600" />
-              <div className="absolute inset-0 rounded-full border-2 border-green-200 animate-pulse"></div>
-            </div>
-            <div className="text-center">
-              <p className="text-green-800 font-medium">{uploadProgress}</p>
-              <p className="text-green-600 text-sm flex items-center gap-1">
-                <Clock className="w-3 h-3" />
-                אנא המתן, זה עשוי לקחת מספר רגעים...
-              </p>
-            </div>
+        </Button>
+      ) : (
+        <div className="flex items-center justify-between w-full p-2 border rounded-md bg-gray-50">
+          <div className="flex items-center gap-2">
+            <FileIcon className="w-5 h-5 text-gray-500" />
+            <span className="text-sm font-medium text-gray-700">{fileName}</span>
           </div>
+          <Button
+            onClick={onClearFile}
+            variant="ghost"
+            size="icon"
+            disabled={isUploading}
+          >
+            <X className="w-4 h-4" />
+          </Button>
         </div>
       )}
-      
-      <p className="text-xs text-gray-500">תומך בעברית ובאנגלית. לאחר העלאה תוכל לחלץ מושגים אוטומטית.</p>
     </div>
   );
 }
