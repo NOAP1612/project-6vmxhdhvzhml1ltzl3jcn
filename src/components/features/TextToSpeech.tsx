@@ -30,7 +30,7 @@ export function TextToSpeech() {
     try {
       const result = await readTextOutLoud({ 
         text, 
-        voice: "alloy",
+        voice: "ash",
         speed: speed[0]
       });
 
@@ -75,7 +75,7 @@ export function TextToSpeech() {
         </div>
         <div>
           <h1 className="text-3xl font-bold text-gray-900">קריאה בקול</h1>
-          <p className="text-gray-600">המר טקסט לדיבור עם קול Fable</p>
+          <p className="text-gray-600">המר טקסט לדיבור עם קול Ash</p>
         </div>
       </div>
 
