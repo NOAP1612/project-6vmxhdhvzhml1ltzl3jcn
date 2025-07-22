@@ -147,3 +147,78 @@
     box-shadow: 0 0 20px rgba(91, 211, 131, 0.8);
   }
 }
+
+/* Enhanced Animation Classes */
+.animate-fade-in {
+  animation: fade-in 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.animate-scale-in {
+  animation: scale-in 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.animate-progress {
+  animation: progress 2s ease-in-out infinite;
+}
+
+.animate-pulse-ring {
+  animation: pulse-ring 2s ease-out infinite;
+}
+
+.animate-float {
+  animation: float 4s ease-in-out infinite;
+}
+
+.animate-glow {
+  animation: glow 3s ease-in-out infinite;
+}
+
+.animate-tech-pulse {
+  animation: tech-pulse 2s ease-in-out infinite;
+}
+
+.animate-gradient-shift {
+  animation: gradient-shift 3s ease-in-out infinite;
+}
+
+.animate-border-rotate {
+  animation: border-rotate 3s linear infinite;
+}
+
+.animate-float-tech {
+  animation: float-tech 6s ease-in-out infinite;
+}
+
+.animate-gradient-morph {
+  animation: gradient-morph 8s ease infinite;
+}
+
+.animate-holographic {
+  animation: holographic-shift 4s ease-in-out infinite;
+}
+
+.animate-neural-pulse {
+  animation: neural-pulse 6s ease-in-out infinite;
+}
+
+.animate-glitch {
+  animation: glitch 0.3s ease-in-out infinite;
+}
+
+.animate-digital-flicker {
+  animation: digital-flicker 2s ease-in-out infinite;
+}
+
+.animate-bounce-1 {
+  animation: bounce-delay 1.4s infinite ease-in-out both;
+  animation-delay: -0.32s;
+}
+
+.animate-bounce-2 {
+  animation: bounce-delay 1.4s infinite ease-in-out both;
+  animation-delay: -0.16s;
+}
+
+.animate-bounce-3 {
+  animation: bounce-delay 1.4s infinite ease-in-out both;
+}

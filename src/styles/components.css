@@ -131,4 +131,11 @@
     box-shadow: 0 20px 40px rgba(91, 211, 131, 0.2), 0 0 30px rgba(91, 211, 131, 0.1);
     transform: translateY(-8px) scale(1.03);
   }
+
+  .glass-effect {
+    @apply bg-white/95 backdrop-blur-md border border-gray-200 shadow-xl;
+    background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(91, 211, 131, 0.08) 100%);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
 }

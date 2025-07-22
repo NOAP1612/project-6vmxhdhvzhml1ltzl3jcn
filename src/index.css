@@ -1,2 +1,8 @@
-/* This file now imports the modular CSS structure */
-@import './styles/index.css';
+@import './styles/base.css';
+@import './styles/components.css';
+@import './styles/tech-effects.css';
+@import './styles/animations.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
