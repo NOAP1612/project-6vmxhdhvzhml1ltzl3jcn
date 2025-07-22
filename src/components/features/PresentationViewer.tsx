@@ -56,7 +56,7 @@ export function PresentationViewer({ presentation, theme, onClose }: Presentatio
         throw new Error('לא נמצא אלמנט השקף');
       }
 
-      // Capture the current slide
+      // Capture the current slide with higher quality
       const canvas = await html2canvas(slideElement as HTMLElement, {
         backgroundColor: null,
         scale: 2,
@@ -64,12 +64,15 @@ export function PresentationViewer({ presentation, theme, onClose }: Presentatio
         allowTaint: true,
         width: slideElement.clientWidth,
         height: slideElement.clientHeight,
+        logging: false,
+        imageTimeout: 15000,
+        removeContainer: true,
       });
 
       // Create download link
       const link = document.createElement('a');
       link.download = `${presentation.title}_שקף_${currentSlide + 1}.png`;
-      link.href = canvas.toDataURL('image/png');
+      link.href = canvas.toDataURL('image/png', 1.0);
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -82,7 +85,7 @@ export function PresentationViewer({ presentation, theme, onClose }: Presentatio
       console.error('Error downloading slide:', error);
       toast({
         title: "שגיאה",
-        description: "אירעה שגיאה בהורדת השקף",
+        description: "אירעה שגיאה בהורדת השקף. אנא נסה שוב.",
         variant: "destructive",
       });
     } finally {
@@ -117,9 +120,9 @@ export function PresentationViewer({ presentation, theme, onClose }: Presentatio
             size="sm" 
             onClick={handleDownload}
             disabled={isDownloading}
-            className="text-white hover:bg-white hover:bg-opacity-20"
+            className="text-white hover:bg-white hover:bg-opacity-20 transition-colors"
           >
-            <Download className="h-4 w-4" />
+            <Download className="h-4 w-4 ml-2" />
             {isDownloading ? 'מוריד...' : 'הורד שקף'}
           </Button>
           <Button variant="ghost" size="sm" onClick={onClose} className="text-white hover:bg-white hover:bg-opacity-20">

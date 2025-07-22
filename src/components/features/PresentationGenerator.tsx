@@ -1,15 +1,13 @@
+import { useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-import { Upload, FileText, Presentation, Loader2, RotateCcw, Eye, BarChart3 } from "lucide-react";
+import { Loader2, Upload, FileText, Presentation, Trash2 } from "lucide-react";
 import { usePresentationGenerator } from "@/hooks/usePresentationGenerator";
 import { PresentationViewer } from "./PresentationViewer";
-import { useState } from "react";
 
 export function PresentationGenerator() {
   const {
@@ -31,11 +29,17 @@ export function PresentationGenerator() {
 
   const [showViewer, setShowViewer] = useState(false);
 
+  const handleViewPresentation = () => {
+    if (presentationData) {
+      setShowViewer(true);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="text-center">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">יצירת מצגות</h1>
-        <p className="text-gray-600">צור מצגות מקצועיות מטקסט או קבצי PDF עם 3 גרפים שונים</p>
+        <p className="text-gray-600">צור מצגות מקצועיות עם גרפים וויזואליזציות מטקסט או קבצים</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -46,84 +50,59 @@ export function PresentationGenerator() {
               <Presentation className="h-5 w-5" />
               הגדרות המצגת
             </CardTitle>
-            <CardDescription>
-              הזן את הפרטים הבסיסיים למצגת שלך
-            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="topic">נושא המצגת</Label>
+            {/* Topic Input */}
+            <div>
+              <Label htmlFor="topic">נושא המצגת *</Label>
               <Input
                 id="topic"
-                placeholder="לדוגמה: בינה מלאכותית בחינוך"
                 value={topic}
                 onChange={(e) => setTopic(e.target.value)}
+                placeholder="הזן את נושא המצגת..."
+                className="mt-1"
               />
             </div>
 
-            <div className="space-y-2">
+            {/* Slide Count */}
+            <div>
               <Label htmlFor="slideCount">מספר שקופיות</Label>
-              <Select value={slideCount.toString()} onValueChange={(value) => setSlideCount(parseInt(value))}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="3">3 שקופיות</SelectItem>
-                  <SelectItem value="5">5 שקופיות</SelectItem>
-                  <SelectItem value="7">7 שקופיות</SelectItem>
-                  <SelectItem value="10">10 שקופיות</SelectItem>
-                  <SelectItem value="15">15 שקופיות</SelectItem>
-                </SelectContent>
-              </Select>
-              <p className="text-xs text-gray-500">
-                📊 יתווספו 3 גרפים שונים: עמודות, עוגה ודיאגרמה רדאר
-              </p>
+              <Input
+                id="slideCount"
+                type="number"
+                min="3"
+                max="15"
+                value={slideCount}
+                onChange={(e) => setSlideCount(parseInt(e.target.value) || 5)}
+                className="mt-1"
+              />
             </div>
 
-            <Separator />
-
-            <div className="space-y-2">
-              <Label>בחר עיצוב</Label>
-              <div className="grid grid-cols-2 gap-2">
+            {/* Theme Selection */}
+            <div>
+              <Label>ערכת נושא</Label>
+              <div className="grid grid-cols-2 gap-2 mt-2">
                 {themes.map((theme) => (
-                  <Button
+                  <button
                     key={theme.id}
-                    variant={selectedTheme === theme.id ? "default" : "outline"}
-                    className={`h-12 ${selectedTheme === theme.id ? `bg-gradient-to-r ${theme.colors} text-white` : ''}`}
                     onClick={() => setSelectedTheme(theme.id)}
+                    className={`p-3 rounded-lg border-2 transition-all ${
+                      selectedTheme === theme.id
+                        ? 'border-blue-500 bg-blue-50'
+                        : 'border-gray-200 hover:border-gray-300'
+                    }`}
                   >
-                    {theme.name}
-                  </Button>
+                    <div className={`h-4 w-full rounded bg-gradient-to-r ${theme.colors} mb-2`}></div>
+                    <span className="text-sm font-medium">{theme.name}</span>
+                  </button>
                 ))}
               </div>
             </div>
-          </CardContent>
-        </Card>
 
-        {/* Content Input Section */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <FileText className="h-5 w-5" />
-              תוכן המצגת
-            </CardTitle>
-            <CardDescription>
-              הזן טקסט או העלה קובץ PDF
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="file-upload">העלאת קובץ PDF</Label>
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={isUploading}
-                  className="flex-1"
-                >
-                  <Upload className="h-4 w-4 mr-2" />
-                  {isUploading ? 'מעלה...' : 'בחר קובץ'}
-                </Button>
+            {/* File Upload */}
+            <div>
+              <Label>העלאת קובץ (אופציונלי)</Label>
+              <div className="mt-2">
                 <input
                   ref={fileInputRef}
                   type="file"
@@ -131,116 +110,130 @@ export function PresentationGenerator() {
                   onChange={handleFileChange}
                   className="hidden"
                 />
+                <Button
+                  variant="outline"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isUploading}
+                  className="w-full"
+                >
+                  <Upload className="h-4 w-4 ml-2" />
+                  {isUploading ? uploadProgress : 'העלה קובץ PDF או טקסט'}
+                </Button>
+                {fileName && (
+                  <div className="flex items-center justify-between mt-2 p-2 bg-green-50 rounded-lg">
+                    <div className="flex items-center gap-2">
+                      <FileText className="h-4 w-4 text-green-600" />
+                      <span className="text-sm text-green-800">{fileName}</span>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        setSourceText('');
+                        if (fileInputRef.current) fileInputRef.current.value = '';
+                      }}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                )}
               </div>
-              {fileName && (
-                <Badge variant="secondary" className="mt-2">
-                  {fileName}
-                </Badge>
-              )}
-              {uploadProgress && (
-                <p className="text-sm text-blue-600">{uploadProgress}</p>
-              )}
             </div>
 
-            <div className="text-center text-gray-500">או</div>
-
-            <div className="space-y-2">
-              <Label htmlFor="sourceText">הדבק טקסט ישירות</Label>
+            {/* Manual Text Input */}
+            <div>
+              <Label htmlFor="sourceText">טקסט מקור (אופציונלי)</Label>
               <Textarea
                 id="sourceText"
-                placeholder="הדבק כאן את הטקסט שממנו תרצה ליצור מצגת..."
                 value={sourceText}
                 onChange={(e) => setSourceText(e.target.value)}
-                rows={8}
+                placeholder="הזן טקסט לניתוח ויצירת המצגת..."
+                className="mt-1 min-h-[120px]"
               />
             </div>
-          </CardContent>
-        </Card>
-      </div>
 
-      {/* Action Buttons */}
-      <div className="flex justify-center gap-4">
-        <Button
-          onClick={handleGeneratePresentation}
-          disabled={isLoading || isUploading}
-          size="lg"
-          className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
-        >
-          {isLoading ? (
-            <>
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-              יוצר מצגת...
-            </>
-          ) : (
-            <>
-              <Presentation className="h-4 w-4 mr-2" />
-              צור מצגת
-            </>
-          )}
-        </Button>
-
-        <Button variant="outline" onClick={handleReset}>
-          <RotateCcw className="h-4 w-4 mr-2" />
-          איפוס
-        </Button>
-      </div>
-
-      {/* Results Section */}
-      {presentationData && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <span>המצגת שלך מוכנה!</span>
-                <Badge variant="outline" className="text-xs">
-                  📊 {presentationData.slides.filter(s => s.visual?.type === 'chart').length} גרפים
-                </Badge>
-              </div>
-              <Button onClick={() => setShowViewer(true)}>
-                <Eye className="h-4 w-4 mr-2" />
-                הצג מצגת
+            {/* Action Buttons */}
+            <div className="flex gap-2">
+              <Button
+                onClick={handleGeneratePresentation}
+                disabled={isLoading || !topic.trim()}
+                className="flex-1"
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="h-4 w-4 ml-2 animate-spin" />
+                    יוצר מצגת...
+                  </>
+                ) : (
+                  <>
+                    <Presentation className="h-4 w-4 ml-2" />
+                    צור מצגת
+                  </>
+                )}
               </Button>
-            </CardTitle>
-            <CardDescription>
-              {presentationData.title} • {presentationData.slides.length} שקופיות
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-4">
-              {presentationData.slides.map((slide, index) => (
-                <Card key={index} className={`border-l-4 ${slide.visual?.type === 'chart' ? 'border-l-green-500' : 'border-l-blue-500'}`}>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-lg flex items-center gap-2">
-                      שקופית {index + 1}: {slide.title}
-                      {slide.visual?.type === 'chart' && (
-                        <Badge variant="secondary" className="text-xs">
-                          <BarChart3 className="h-3 w-3 mr-1" />
-                          גרף {slide.visual.data?.type === 'bar' ? 'עמודות' : 
-                               slide.visual.data?.type === 'pie' ? 'עוגה' : 
-                               slide.visual.data?.type === 'radar' ? 'רדאר' : ''}
-                        </Badge>
-                      )}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-2 mb-3">
-                      {slide.content.map((point, pointIndex) => (
-                        <p key={pointIndex} className="text-gray-700 leading-relaxed">{point}</p>
-                      ))}
-                    </div>
-                    {slide.visual?.type === 'chart' && slide.visual.data && (
-                      <Badge variant="outline" className="text-xs bg-green-50 text-green-700">
-                        📊 {slide.visual.data.title}
-                      </Badge>
-                    )}
-                    {/* Removed visual suggestion completely */}
-                  </CardContent>
-                </Card>
-              ))}
+              <Button variant="outline" onClick={handleReset}>
+                <Trash2 className="h-4 w-4 ml-2" />
+                נקה
+              </Button>
             </div>
           </CardContent>
         </Card>
-      )}
+
+        {/* Results Section */}
+        <Card>
+          <CardHeader>
+            <CardTitle>תוצאות</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {presentationData ? (
+              <div className="space-y-4">
+                <div className="p-4 bg-green-50 rounded-lg">
+                  <h3 className="font-semibold text-green-800 mb-2">
+                    {presentationData.title}
+                  </h3>
+                  <div className="flex items-center gap-4 text-sm text-green-700">
+                    <Badge variant="secondary">
+                      {presentationData.slides.length} שקופיות
+                    </Badge>
+                    <Badge variant="secondary">
+                      {presentationData.slides.filter(s => s.visual?.type === 'chart').length} גרפים
+                    </Badge>
+                  </div>
+                </div>
+
+                <Button onClick={handleViewPresentation} className="w-full">
+                  <Presentation className="h-4 w-4 ml-2" />
+                  הצג מצגת במסך מלא
+                </Button>
+
+                {/* Slides Preview */}
+                <div className="space-y-2 max-h-60 overflow-y-auto">
+                  {presentationData.slides.map((slide, index) => (
+                    <div key={index} className="p-3 border rounded-lg">
+                      <div className="flex items-center justify-between mb-1">
+                        <h4 className="font-medium text-sm">{slide.title}</h4>
+                        {slide.visual?.type === 'chart' && (
+                          <Badge variant="outline" className="text-xs">
+                            📊 גרף
+                          </Badge>
+                        )}
+                      </div>
+                      <p className="text-xs text-gray-600 line-clamp-2">
+                        {slide.content[0]}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className="text-center py-8 text-gray-500">
+                <Presentation className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                <p>המצגת תופיע כאן לאחר היצירה</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Presentation Viewer Modal */}
       {showViewer && presentationData && (

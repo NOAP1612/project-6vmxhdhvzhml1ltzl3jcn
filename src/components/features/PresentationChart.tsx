@@ -42,67 +42,51 @@ export function PresentationChart({ chartData, theme = 'modern' }: PresentationC
       case 'pie':
         const RADIAN = Math.PI / 180;
         const renderCustomizedLabel = ({ cx, cy, midAngle, outerRadius, percent, name, index }) => {
-          // Calculate position outside the pie chart
+          // Calculate position for labels outside the pie
           const radius = outerRadius + 60; // Increased distance from pie
           const x = cx + radius * Math.cos(-midAngle * RADIAN);
           const y = cy + radius * Math.sin(-midAngle * RADIAN);
 
-          // Determine text anchor based on position
-          const isRightSide = x > cx;
-          
+          // Adjust vertical position to prevent overlap
+          const adjustedY = y + (index % 2 === 0 ? -10 : 10);
+
           return (
             <g>
-              {/* Connection line from pie edge to label */}
+              {/* Connection line from pie to label */}
               <line
                 x1={cx + (outerRadius + 5) * Math.cos(-midAngle * RADIAN)}
                 y1={cy + (outerRadius + 5) * Math.sin(-midAngle * RADIAN)}
-                x2={cx + (outerRadius + 35) * Math.cos(-midAngle * RADIAN)}
-                y2={cy + (outerRadius + 35) * Math.sin(-midAngle * RADIAN)}
+                x2={cx + (outerRadius + 40) * Math.cos(-midAngle * RADIAN)}
+                y2={cy + (outerRadius + 40) * Math.sin(-midAngle * RADIAN)}
                 stroke="white"
                 strokeWidth={1}
                 opacity={0.8}
               />
               {/* Horizontal line */}
               <line
-                x1={cx + (outerRadius + 35) * Math.cos(-midAngle * RADIAN)}
-                y1={cy + (outerRadius + 35) * Math.sin(-midAngle * RADIAN)}
-                x2={x - (isRightSide ? 5 : -5)}
-                y2={y}
+                x1={cx + (outerRadius + 40) * Math.cos(-midAngle * RADIAN)}
+                y1={cy + (outerRadius + 40) * Math.sin(-midAngle * RADIAN)}
+                x2={x > cx ? x - 10 : x + 10}
+                y2={adjustedY}
                 stroke="white"
                 strokeWidth={1}
                 opacity={0.8}
               />
-              {/* Label text positioned clearly outside */}
+              {/* Label text */}
               <text
-                x={x}
-                y={y}
+                x={x > cx ? x - 5 : x + 5}
+                y={adjustedY}
                 fill="white"
-                textAnchor={isRightSide ? 'start' : 'end'}
+                textAnchor={x > cx ? 'start' : 'end'}
                 dominantBaseline="central"
                 fontSize={12}
                 className="pointer-events-none"
                 style={{ 
-                  textShadow: '2px 2px 4px rgba(0,0,0,0.9)',
+                  textShadow: '2px 2px 4px rgba(0,0,0,0.8)',
                   fontWeight: '500'
                 }}
               >
-                {`${name}`}
-              </text>
-              {/* Percentage on separate line */}
-              <text
-                x={x}
-                y={y + 15}
-                fill="white"
-                textAnchor={isRightSide ? 'start' : 'end'}
-                dominantBaseline="central"
-                fontSize={11}
-                className="pointer-events-none"
-                style={{ 
-                  textShadow: '2px 2px 4px rgba(0,0,0,0.9)',
-                  opacity: 0.9
-                }}
-              >
-                {`${(percent * 100).toFixed(0)}%`}
+                {`${name} (${(percent * 100).toFixed(0)}%)`}
               </text>
             </g>
           );
@@ -179,17 +163,22 @@ export function PresentationChart({ chartData, theme = 'modern' }: PresentationC
 
       case 'radar':
         return (
-          <ResponsiveContainer width="100%" height={350}>
-            <RadarChart data={chartData.data} margin={{ top: 30, right: 30, bottom: 30, left: 30 }}>
+          <ResponsiveContainer width="100%" height={400}>
+            <RadarChart data={chartData.data} margin={{ top: 40, right: 80, bottom: 40, left: 80 }}>
               <PolarGrid stroke="rgba(255,255,255,0.2)" />
               <PolarAngleAxis 
                 dataKey="name" 
-                tick={{ fill: 'white', fontSize: 11 }}
+                tick={{ fill: 'white', fontSize: 10 }}
                 className="text-white"
+                tickFormatter={(value) => {
+                  // Truncate long labels to prevent overlap
+                  return value.length > 15 ? value.substring(0, 12) + '...' : value;
+                }}
               />
               <PolarRadiusAxis 
-                tick={{ fill: 'white', fontSize: 9 }}
-                tickCount={5}
+                tick={{ fill: 'white', fontSize: 8 }}
+                tickCount={4}
+                angle={90}
               />
               <Radar 
                 name="Value" 
