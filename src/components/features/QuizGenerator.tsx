@@ -89,9 +89,16 @@ export function QuizGenerator() {
       }
     } catch (error) {
       console.error("Error processing file:", error);
+      let description = "לא הצלחנו לחלץ את הטקסט מהקובץ. אנא ודא שהקובץ תקין ונסה שוב.";
+      if (error instanceof TypeError && error.message === 'Failed to fetch') {
+        description = "אירעה שגיאת רשת בעת עיבוד הקובץ. אנא בדוק את חיבור האינטרנט שלך ונסה שוב. אם הבעיה נמשכת, ייתכן שיש בעיה זמנית בשרת.";
+      } else if (error instanceof Error) {
+        description = `אירעה שגיאה: ${error.message}`;
+      }
+      
       toast({
         title: "שגיאה בעיבוד הקובץ",
-        description: "לא הצלחנו לחלץ את הטקסט מהקובץ. אנא ודא שהקובץ תקין ונסה שוב.",
+        description: description,
         variant: "destructive",
       });
       setFileName('');
