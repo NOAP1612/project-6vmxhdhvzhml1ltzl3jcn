@@ -1,9 +1,10 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Slider } from "@/components/ui/slider";
 import { Volume2, Loader2, Play, Pause, Download, Mic } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { textToSpeech } from "@/functions";
@@ -14,8 +15,31 @@ export function TextToSpeech() {
   const [isLoading, setIsLoading] = useState(false);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [duration, setDuration] = useState(0);
+  const [currentTime, setCurrentTime] = useState(0);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const { toast } = useToast();
+
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (audio) {
+      const setAudioData = () => {
+        setDuration(audio.duration);
+        setCurrentTime(audio.currentTime);
+      };
+
+      const setAudioTime = () => setCurrentTime(audio.currentTime);
+
+      audio.addEventListener("loadeddata", setAudioData);
+      audio.addEventListener("timeupdate", setAudioTime);
+
+      return () => {
+        audio.removeEventListener("loadeddata", setAudioData);
+        audio.removeEventListener("timeupdate", setAudioTime);
+      };
+    }
+  }, [audioUrl]);
+
 
   const handleGenerate = async () => {
     if (!text.trim()) {
@@ -29,6 +53,8 @@ export function TextToSpeech() {
 
     setIsLoading(true);
     setAudioUrl(null);
+    setCurrentTime(0);
+    setDuration(0);
     try {
       const result = await textToSpeech({
         text,
@@ -88,6 +114,20 @@ export function TextToSpeech() {
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
+    }
+  };
+
+  const formatTime = (time: number) => {
+    if (isNaN(time)) return "00:00";
+    const minutes = Math.floor(time / 60);
+    const seconds = Math.floor(time % 60);
+    return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+  };
+
+  const handleSeek = (value: number[]) => {
+    if (audioRef.current) {
+      audioRef.current.currentTime = value[0];
+      setCurrentTime(value[0]);
     }
   };
 
@@ -214,22 +254,30 @@ export function TextToSpeech() {
               <Button
                 onClick={handlePlay}
                 variant="outline"
-                size="lg"
-                className="flex items-center gap-2"
+                size="icon"
+                className="flex-shrink-0 w-12 h-12 rounded-full"
               >
                 {isPlaying ? (
-                  <>
-                    <Pause className="w-5 h-5" />
-                    השהה
-                  </>
+                  <Pause className="w-6 h-6" />
                 ) : (
-                  <>
-                    <Play className="w-5 h-5" />
-                    נגן
-                  </>
+                  <Play className="w-6 h-6" />
                 )}
               </Button>
               
+              <div className="flex-grow flex items-center gap-3">
+                <span className="text-sm font-mono text-gray-600">{formatTime(currentTime)}</span>
+                <Slider
+                  value={[currentTime]}
+                  max={duration}
+                  step={1}
+                  onValueChange={handleSeek}
+                  disabled={!audioUrl || duration === 0}
+                />
+                <span className="text-sm font-mono text-gray-600">{formatTime(duration)}</span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-4">
               <Button
                 onClick={handleDownload}
                 variant="outline"
