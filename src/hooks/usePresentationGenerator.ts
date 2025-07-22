@@ -2,11 +2,17 @@ import { useState, useRef } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { uploadFile, extractDataFromUploadedFile } from "@/integrations/core";
 import { presentationSlidesFromText } from "@/functions";
+import { ChartData } from '@/hooks/useChartGenerator';
 
 export interface Slide {
   title: string;
   content: string[];
-  visualSuggestion: string;
+  visualSuggestion: string; // This will be deprecated but kept for safety
+  visual: {
+    type: 'chart' | 'image';
+    data?: ChartData;
+    url?: string;
+  } | null;
 }
 
 export interface PresentationData {
@@ -15,6 +21,7 @@ export interface PresentationData {
 }
 
 export const usePresentationGenerator = () => {
+  // ... keep existing code (state variables)
   const [topic, setTopic] = useState('');
   const [sourceText, setSourceText] = useState('');
   const [fileName, setFileName] = useState('');
@@ -36,6 +43,7 @@ export const usePresentationGenerator = () => {
   ];
 
   const withTimeout = async <T,>(promise: Promise<T>, timeoutMs: number): Promise<T> => {
+    // ... keep existing code (timeout function)
     const timeoutPromise = new Promise<never>((_, reject) => {
       setTimeout(() => reject(new Error('Request timeout')), timeoutMs);
     });
@@ -43,6 +51,7 @@ export const usePresentationGenerator = () => {
   };
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    // ... keep existing code (handleFileChange function)
     const selectedFile = event.target.files?.[0];
     if (!selectedFile) return;
 
@@ -113,6 +122,7 @@ export const usePresentationGenerator = () => {
   };
 
   const handleGeneratePresentation = async () => {
+    // ... keep existing code (handleGeneratePresentation function, with updated result handling)
     const textToAnalyze = sourceText || topic;
     
     if (!textToAnalyze.trim()) {
@@ -135,6 +145,10 @@ export const usePresentationGenerator = () => {
 
     setIsLoading(true);
     setPresentationData(null);
+    toast({
+      title: "יוצר מצגת...",
+      description: "זה עשוי לקחת מספר דקות, תלוי במורכבות התוכן...",
+    });
 
     try {
       const result = await presentationSlidesFromText({
@@ -165,6 +179,7 @@ export const usePresentationGenerator = () => {
   };
 
   const handleReset = () => {
+    // ... keep existing code (handleReset function)
     setTopic('');
     setSourceText('');
     setFileName('');
