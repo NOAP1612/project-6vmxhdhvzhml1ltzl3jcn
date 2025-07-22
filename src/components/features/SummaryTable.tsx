@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Table, Loader2, Sparkles, FileText } from "lucide-react";
+import { Table, Loader2, Sparkles } from "lucide-react";
 import { useSummaryTable } from "@/hooks/useSummaryTable";
 import { FileUpload } from "./FileUpload";
 import { ConceptsManager } from "./ConceptsManager";
@@ -33,13 +33,13 @@ export function SummaryTable() {
     handleGenerate,
   } = useSummaryTable();
 
-  const isExtractDisabled = isExtractingConcepts || isUploading || (!sourceText.trim() && !fileName) || !topic.trim();
+  const isExtractDisabled = isExtractingConcepts || isUploading || (!!fileName && !sourceText.trim());
 
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="flex items-center gap-3 mb-6">
-        <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl flex items-center justify-center">
-          <FileText className="w-6 h-6 text-white" />
+        <div className="w-10 h-10 bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl flex items-center justify-center">
+          <Table className="w-6 h-6 text-white" />
         </div>
         <div>
           <h1 className="text-3xl font-bold text-gray-900">טבלת סיכום</h1>
@@ -106,53 +106,52 @@ export function SummaryTable() {
               value={sourceText}
               onChange={(e) => setSourceText(e.target.value)}
               className="h-32"
-              disabled={isUploading || !!fileName}
+              disabled={isUploading}
             />
           </div>
 
-          <TooltipProvider>
-            <Tooltip delayDuration={200}>
-              <TooltipTrigger asChild>
-                <div className="w-full">
-                  <Button
-                    onClick={handleExtractConcepts}
-                    disabled={isExtractDisabled}
-                    variant="outline"
-                    className="w-full border-green-500 text-green-600 hover:bg-green-50 disabled:cursor-not-allowed"
-                  >
-                    {isExtractingConcepts ? (
-                      <>
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        מחלץ מושגים...
-                      </>
-                    ) : isUploading ? (
-                      <>
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        מעבד קובץ, נא להמתין...
-                      </>
-                    ) : (
-                      <>
-                        <Sparkles className="w-4 h-4 mr-2" />
-                        חלץ מושגים אוטומטית מהטקסט
-                      </>
-                    )}
-                  </Button>
-                </div>
-              </TooltipTrigger>
-              {isExtractDisabled && (
-                <TooltipContent>
-                  <p>
-                    {isUploading
-                      ? "יש להמתין לסיום עיבוד הקובץ."
-                      : !topic.trim()
-                      ? "יש להזין נושא לטבלה."
-                      : "הזן טקסט או העלה קובץ כדי לחלץ מושגים."
-                    }
-                  </p>
-                </TooltipContent>
-              )}
-            </Tooltip>
-          </TooltipProvider>
+          {(sourceText.trim() || fileName) && topic.trim() && (
+            <TooltipProvider>
+              <Tooltip delayDuration={200}>
+                <TooltipTrigger asChild>
+                  <div className="w-full">
+                    <Button
+                      onClick={handleExtractConcepts}
+                      disabled={isExtractDisabled}
+                      variant="outline"
+                      className="w-full border-green-500 text-green-600 hover:bg-green-50 disabled:cursor-not-allowed"
+                    >
+                      {isExtractingConcepts ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          מחלץ מושגים...
+                        </>
+                      ) : isUploading ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          מעבד קובץ, נא להמתין...
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles className="w-4 h-4 mr-2" />
+                          חלץ מושגים אוטומטית מהטקסט
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </TooltipTrigger>
+                {isExtractDisabled && (
+                  <TooltipContent>
+                    <p>
+                      {isUploading
+                        ? "יש להמתין לסיום עיבוד הקובץ."
+                        : "הכפתור יהפוך לפעיל לאחר שהטקסט יחולץ מהקובץ."}
+                    </p>
+                  </TooltipContent>
+                )}
+              </Tooltip>
+            </TooltipProvider>
+          )}
 
           <ConceptsManager
             concepts={concepts}
@@ -163,8 +162,8 @@ export function SummaryTable() {
 
           <Button 
             onClick={handleGenerate} 
-            disabled={isLoading || concepts.every(c => !c.trim())}
-            className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+            disabled={isLoading}
+            className="w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600"
           >
             {isLoading ? (
               <>

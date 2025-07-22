@@ -1,20 +1,31 @@
 import html2canvas from 'html2canvas';
 
-export const downloadChartAsPNG = async (element: HTMLElement, fileName: string): Promise<void> => {
+export const downloadChartAsPNG = async (chartElement: HTMLElement, fileName: string) => {
   try {
-    const canvas = await html2canvas(element, {
-      backgroundColor: '#ffffff', // Set a white background
-      scale: 2, // Increase resolution
+    // Wait a bit to ensure the chart is fully rendered
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    const canvas = await html2canvas(chartElement, {
+      backgroundColor: '#ffffff',
+      scale: 2, // Higher resolution
+      useCORS: true,
+      allowTaint: true,
+      logging: false,
     });
-    const dataUrl = canvas.toDataURL('image/png');
+    
+    // Create download link
     const link = document.createElement('a');
-    link.href = dataUrl;
-    link.download = `${fileName.replace(/ /g, '_')}.png`;
+    link.download = `${fileName}.png`;
+    link.href = canvas.toDataURL('image/png');
+    
+    // Trigger download
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    
+    return true;
   } catch (error) {
     console.error('Error downloading chart:', error);
-    throw new Error('Failed to download chart');
+    return false;
   }
 };
