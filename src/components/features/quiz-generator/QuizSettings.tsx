@@ -1,18 +1,14 @@
-import React from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
-import { FileQuestion, Loader2 } from "lucide-react";
-import { DriveLinkInput } from "./DriveLinkInput";
-import { FileUpload } from "./FileUpload";
+import { Label } from "@/components/ui/label";
+import { Loader2, Settings, BrainCircuit } from "lucide-react";
+import { FileUpload } from './FileUpload';
+import { LanguageSelect } from './LanguageSelect';
+import { NumQuestionsSelect } from './NumQuestionsSelect';
+import { QuestionTypeSelect } from './QuestionTypeSelect';
 
 interface QuizSettingsProps {
-  driveLink: string;
-  setDriveLink: (value: string) => void;
-  handleDriveLinkProcess: () => void;
-  isProcessingDrive: boolean;
   isUploading: boolean;
   fileName: string;
   handleFileChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
@@ -32,130 +28,91 @@ interface QuizSettingsProps {
 }
 
 export const QuizSettings = ({
-  driveLink, setDriveLink, handleDriveLinkProcess, isProcessingDrive, isUploading,
-  fileName, handleFileChange, handleClearFile, uploadProgress, fileInputRef,
-  topic, setTopic,
-  numQuestions, setNumQuestions,
-  questionType, setQuestionType,
-  language, setLanguage,
-  handleGenerate, isLoading
+  isUploading,
+  fileName,
+  handleFileChange,
+  handleClearFile,
+  uploadProgress,
+  fileInputRef,
+  topic,
+  setTopic,
+  numQuestions,
+  setNumQuestions,
+  questionType,
+  setQuestionType,
+  language,
+  setLanguage,
+  handleGenerate,
+  isLoading,
 }: QuizSettingsProps) => {
+  const isGenerateDisabled = isLoading || isUploading || !topic.trim();
+
   return (
-    <Card>
+    <Card className="bg-white/60 backdrop-blur-sm border-indigo-100 shadow-sm">
       <CardHeader>
-        <CardTitle>הגדרות השאלון</CardTitle>
-        <CardDescription>
-          הזן את פרטי השאלון שברצונך ליצור, או העלה קובץ PDF או הדבק קישור לדרייב כדי ליצור שאלון מהתוכן שלו.
-        </CardDescription>
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-indigo-100 rounded-md">
+            <Settings className="w-6 h-6 text-indigo-600" />
+          </div>
+          <CardTitle className="text-2xl font-bold text-gray-800">הגדרות שאלון</CardTitle>
+        </div>
       </CardHeader>
       <CardContent className="space-y-6">
-        <DriveLinkInput
-          driveLink={driveLink}
-          setDriveLink={setDriveLink}
-          handleDriveLinkProcess={handleDriveLinkProcess}
-          isProcessingDrive={isProcessingDrive}
-          isUploading={isUploading}
-        />
-
-        <div className="relative">
-          <div className="absolute inset-0 flex items-center">
-            <span className="w-full border-t" />
-          </div>
-          <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-white px-2 text-muted-foreground">או</span>
-          </div>
-        </div>
-
-        <FileUpload
-          fileName={fileName}
-          handleFileChange={handleFileChange}
-          handleClearFile={handleClearFile}
-          isUploading={isUploading}
-          isProcessingDrive={isProcessingDrive}
-          uploadProgress={uploadProgress}
-          fileInputRef={fileInputRef}
-          driveLink={driveLink}
-        />
-
-        <div className="relative">
-          <div className="absolute inset-0 flex items-center">
-            <span className="w-full border-t" />
-          </div>
-          <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-white px-2 text-muted-foreground">או</span>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-2 md:col-span-2">
-            <Label htmlFor="topic">נושא השאלון (או הטקסט שחולץ)</Label>
-            <Textarea
-              id="topic"
-              placeholder="לדוגמה: היסטוריה של ישראל, או הדבק טקסט כאן"
-              value={topic}
-              onChange={(e) => setTopic(e.target.value)}
-              className="h-32"
-              disabled={isUploading || isProcessingDrive}
+        <div className="grid md:grid-cols-2 gap-6">
+          <div className="space-y-4">
+            <FileUpload
+              isUploading={isUploading}
+              fileName={fileName}
+              handleFileChange={handleFileChange}
+              handleClearFile={handleClearFile}
+              uploadProgress={uploadProgress}
+              fileInputRef={fileInputRef}
             />
+            <div className="relative">
+              <Label htmlFor="topic-textarea">או הדבק טקסט כאן</Label>
+              <Textarea
+                id="topic-textarea"
+                placeholder="הדבק כאן את הטקסט שממנו תרצה ליצור שאלון..."
+                value={topic}
+                onChange={(e) => setTopic(e.target.value)}
+                rows={8}
+                className="bg-white focus:border-indigo-400"
+                disabled={isUploading || !!fileName}
+              />
+            </div>
           </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="numQuestions">מספר שאלות</Label>
-            <Select value={numQuestions} onValueChange={setNumQuestions}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="3">3 שאלות</SelectItem>
-                <SelectItem value="5">5 שאלות</SelectItem>
-                <SelectItem value="10">10 שאלות</SelectItem>
-                <SelectItem value="15">15 שאלות</SelectItem>
-                <SelectItem value="20">20 שאלות</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="questionType">סוג השאלות</Label>
-            <Select value={questionType} onValueChange={setQuestionType}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="multiple">שאלות אמריקאיות</SelectItem>
-                <SelectItem value="open">שאלות פתוחות</SelectItem>
-                <SelectItem value="mixed">מעורב</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2 md:col-span-2">
-            <Label htmlFor="language">שפה</Label>
-            <Select value={language} onValueChange={setLanguage}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="hebrew">עברית</SelectItem>
-                <SelectItem value="english">אנגלית</SelectItem>
-              </SelectContent>
-            </Select>
+          <div className="space-y-4">
+            <NumQuestionsSelect
+              value={numQuestions}
+              onChange={setNumQuestions}
+              disabled={isLoading}
+            />
+            <QuestionTypeSelect
+              value={questionType}
+              onChange={setQuestionType}
+              disabled={isLoading}
+            />
+            <LanguageSelect
+              value={language}
+              onChange={setLanguage}
+              disabled={isLoading}
+            />
           </div>
         </div>
 
         <Button
           onClick={handleGenerate}
-          disabled={isLoading || isUploading || isProcessingDrive}
-          className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600"
+          disabled={isGenerateDisabled}
+          className="w-full py-3 text-lg font-semibold bg-indigo-600 hover:bg-indigo-700 transition-all duration-300 ease-in-out transform hover:scale-105"
         >
           {isLoading ? (
             <>
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              יוצר שאלות...
+              <Loader2 className="w-6 h-6 mr-2 animate-spin" />
+              יוצר שאלון...
             </>
           ) : (
             <>
-              <FileQuestion className="w-4 h-4 mr-2" />
+              <BrainCircuit className="w-6 h-6 mr-2" />
               צור שאלון
             </>
           )}

@@ -1,17 +1,13 @@
 import { useState, useRef } from 'react';
 import { useToast } from "@/hooks/use-toast";
-import { createQuizQuestions, processDriveLink } from "@/functions";
+import { createQuizQuestions } from "@/functions";
 import { uploadFile, extractDataFromUploadedFile } from "@/integrations/core";
 import { QuizHeader } from './quiz-generator/QuizHeader';
 import { QuizSettings } from './quiz-generator/QuizSettings';
 import { QuestionsList } from './quiz-generator/QuestionsList';
 
 interface Question {
-  question: string;
-  type: string;
-  options?: string[];
-  correctAnswer: string;
-  explanation: string;
+// ... keep existing code
 }
 
 export function QuizGenerator() {
@@ -25,95 +21,11 @@ export function QuizGenerator() {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState('');
   const [fileName, setFileName] = useState('');
-  const [driveLink, setDriveLink] = useState('');
-  const [isProcessingDrive, setIsProcessingDrive] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
   const withTimeout = async <T,>(promise: Promise<T>, timeoutMs: number): Promise<T> => {
-    const timeoutPromise = new Promise<never>((_, reject) => {
-      setTimeout(() => reject(new Error('Request timeout')), timeoutMs);
-    });
-    
-    return Promise.race([promise, timeoutPromise]);
-  };
-
-  const handleDriveLinkProcess = async () => {
-    if (!driveLink.trim()) {
-      toast({
-        title: "שגיאה",
-        description: "אנא הזן קישור לקובץ בדרייב",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const drivePatterns = [
-      /drive\.google\.com\/file\/d\/[a-zA-Z0-9-_]+/,
-      /drive\.google\.com\/open\?id=[a-zA-Z0-9-_]+/,
-      /docs\.google\.com\/document\/d\/[a-zA-Z0-9-_]+/
-    ];
-
-    const isValidDriveLink = drivePatterns.some(pattern => pattern.test(driveLink));
-    
-    if (!isValidDriveLink) {
-      toast({
-        title: "קישור לא תקין",
-        description: "אנא הזן קישור תקין לקובץ בגוגל דרייב",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setIsProcessingDrive(true);
-    setTopic('');
-    setQuestions([]);
-    setFileName('');
-
-    try {
-      toast({
-        title: "מעבד קישור דרייב...",
-        description: "מחלץ טקסט מהקובץ בדרייב. זה עשוי לקחת מספר רגעים...",
-      });
-
-      const result = await withTimeout(
-        processDriveLink({ driveLink }),
-        180000 // 3 minutes timeout
-      );
-
-      if (result.success && result.text_content) {
-        setTopic(result.text_content);
-        toast({
-          title: "הצלחה!",
-          description: "הטקסט מהקובץ בדרייב חולץ בהצלחה ומוכן ליצירת שאלון.",
-        });
-      } else {
-        throw new Error(result.error || "Failed to extract text from Drive file");
-      }
-    } catch (error) {
-      console.error("Error processing drive link:", error);
-      let description = "לא הצלחנו לחלץ את הטקסט מהקובץ בדרייב. אנא ודא שהקישור תקין והקובץ נגיש.";
-      
-      if (error instanceof Error) {
-        if (error.message.includes('No domain found for deployment')) {
-          description = "אירעה שגיאת תצורה בשרת. ייתכן שהשירות האחראי על עיבוד קבצי דרייב אינו זמין כרגע. אנא נסה שוב מאוחר יותר.";
-        } else if (error.message === 'Request timeout') {
-          description = "הבקשה ארכה יותר מדי זמן. אנא נסה שוב או בדוק את חיבור האינטרנט שלך.";
-        } else if (error.message === 'Failed to fetch') {
-          description = "אירעה שגיאת רשת. אנא בדוק את חיבור האינטרנט שלך ונסה שוב.";
-        } else {
-          description = `אירעה שגיאה: ${error.message}`;
-        }
-      }
-      
-      toast({
-        title: "שגיאה בעיבוד קישור הדרייב",
-        description: description,
-        variant: "destructive",
-      });
-    } finally {
-      setIsProcessingDrive(false);
-    }
+// ... keep existing code
   };
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -133,7 +45,6 @@ export function QuizGenerator() {
     setIsUploading(true);
     setTopic('');
     setQuestions([]);
-    setDriveLink('');
     setUploadProgress('מעלה קובץ...');
 
     try {
@@ -216,64 +127,23 @@ export function QuizGenerator() {
     setFileName('');
     setTopic('');
     setUploadProgress('');
-    setDriveLink('');
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
   };
 
   const handleGenerate = async () => {
-    if (!topic.trim()) {
-      toast({
-        title: "שגיאה",
-        description: "אנא הזן נושא לשאלון",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setIsLoading(true);
-    try {
-      const result = await createQuizQuestions({
-        topic,
-        numQuestions: parseInt(numQuestions),
-        questionType,
-        language
-      });
-
-      if (result.questions) {
-        setQuestions(result.questions);
-        setShowAnswers(new Array(result.questions.length).fill(false));
-        toast({
-          title: "הצלחה!",
-          description: `נוצרו ${result.questions.length} שאלות בהצלחה`,
-        });
-      }
-    } catch (error) {
-      toast({
-        title: "שגיאה",
-        description: "אירעה שגיאה ביצירת השאלות. אנא נסה שוב.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
+// ... keep existing code
   };
 
   const toggleAnswer = (index: number) => {
-    const newShowAnswers = [...showAnswers];
-    newShowAnswers[index] = !newShowAnswers[index];
-    setShowAnswers(newShowAnswers);
+// ... keep existing code
   };
 
   return (
     <div className="space-y-6 animate-fade-in">
       <QuizHeader />
       <QuizSettings
-        driveLink={driveLink}
-        setDriveLink={setDriveLink}
-        handleDriveLinkProcess={handleDriveLinkProcess}
-        isProcessingDrive={isProcessingDrive}
         isUploading={isUploading}
         fileName={fileName}
         handleFileChange={handleFileChange}
@@ -292,10 +162,7 @@ export function QuizGenerator() {
         isLoading={isLoading}
       />
       <QuestionsList
-        questions={questions}
-        topic={topic}
-        showAnswers={showAnswers}
-        toggleAnswer={toggleAnswer}
+// ... keep existing code
       />
     </div>
   );
