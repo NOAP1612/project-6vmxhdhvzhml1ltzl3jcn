@@ -31,6 +31,7 @@ export const useQuizGenerator = () => {
   const { toast } = useToast();
 
   const withTimeout = async <T,>(promise: Promise<T>, timeoutMs: number): Promise<T> => {
+// ... keep existing code
     const timeoutPromise = new Promise<never>((_, reject) => {
       setTimeout(() => reject(new Error('Request timeout')), timeoutMs);
     });
@@ -39,6 +40,7 @@ export const useQuizGenerator = () => {
   };
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+// ... keep existing code
     const selectedFile = event.target.files?.[0];
     if (!selectedFile) return;
 
@@ -117,6 +119,7 @@ export const useQuizGenerator = () => {
   };
 
   const handleGenerateQuiz = async () => {
+// ... keep existing code
     if (!sourceText.trim()) {
       toast({
         title: "שגיאה",
@@ -196,6 +199,7 @@ ${sourceText}
   };
 
   const handleAnswerChange = (questionIndex: number, answer: string) => {
+// ... keep existing code
     setUserAnswers(prev => ({
       ...prev,
       [questionIndex]: answer
@@ -203,6 +207,7 @@ ${sourceText}
   };
 
   const handleCheckAnswer = (questionIndex: number) => {
+// ... keep existing code
     if (!quizData) return;
 
     const question = quizData.questions[questionIndex];
@@ -241,6 +246,7 @@ ${sourceText}
   };
 
   const handleReset = () => {
+// ... keep existing code
     setSourceText('');
     setFileName('');
     setQuizData(null);

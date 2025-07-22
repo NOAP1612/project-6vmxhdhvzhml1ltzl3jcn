@@ -13,6 +13,7 @@ export function QuizGenerator() {
     sourceText, setSourceText,
     fileName,
     isUploading,
+    uploadProgress,
     isLoading,
     quizData,
     userAnswers,
@@ -23,12 +24,12 @@ export function QuizGenerator() {
     handleFileChange,
     handleGenerateQuiz,
     handleAnswerChange,
-    handleCheckAnswer, // Updated function
+    handleCheckAnswer,
     handleReset,
   } = useQuizGenerator();
 
-  // ... keep existing code (handleClearFile)
   const handleClearFile = () => {
+// ... keep existing code
     setSourceText('');
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
@@ -36,6 +37,7 @@ export function QuizGenerator() {
   };
 
   if (quizData) {
+// ... keep existing code
     return (
       <QuizDisplay
         quizData={quizData}
@@ -51,7 +53,14 @@ export function QuizGenerator() {
   const questionAmountOptions = [...Array.from({ length: 11 }, (_, i) => i + 5), 20];
 
   return (
-    <div className="space-y-6 max-w-3xl mx-auto animate-fade-in">
+    <div className="space-y-6 max-w-3xl mx-auto animate-fade-in relative">
+      {isUploading && (
+        <div className="absolute inset-0 bg-white/80 backdrop-blur-sm flex flex-col items-center justify-center z-10 rounded-lg">
+          <Loader2 className="w-12 h-12 text-blue-600 animate-spin mb-4" />
+          <p className="text-lg font-semibold text-gray-700">{uploadProgress || 'מעבד קובץ...'}</p>
+          <p className="text-sm text-gray-500">זה עשוי לקחת מספר רגעים...</p>
+        </div>
+      )}
       <div className="text-center">
         <div className="inline-block p-3 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-xl">
           <FileQuestion className="w-8 h-8 text-white" />
@@ -71,7 +80,7 @@ export function QuizGenerator() {
           <FileUpload
             fileName={fileName}
             isUploading={isUploading}
-            uploadProgress=""
+            uploadProgress={uploadProgress}
             fileInputRef={fileInputRef}
             onFileChange={handleFileChange}
             onClearFile={handleClearFile}
