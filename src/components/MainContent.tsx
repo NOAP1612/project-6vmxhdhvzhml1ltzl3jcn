@@ -7,6 +7,7 @@ import { Flashcards } from "./features/Flashcards";
 import { FormulaSheet } from "./features/FormulaSheet";
 import { TextToSpeech } from "./features/TextToSpeech";
 import { ChartGenerator } from "./features/ChartGenerator";
+import { PresentationGenerator } from "./features/PresentationGenerator";
 
 interface MainContentProps {
   activeFeature: string;
@@ -33,6 +34,8 @@ export function MainContent({ activeFeature }: MainContentProps) {
         return <TextToSpeech />;
       case 'charts':
         return <ChartGenerator />;
+      case 'presentations':
+        return <PresentationGenerator />;
       default:
         return <Dashboard />;
     }
