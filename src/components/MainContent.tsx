@@ -1,5 +1,11 @@
-import { QuizGenerator } from './features/QuizGenerator';
-import { SummaryTable } from './features/SummaryTable';
+import { Dashboard } from "./features/Dashboard";
+import { QuizGenerator } from "./features/QuizGenerator";
+import { SummaryTable } from "./features/SummaryTable";
+import { StudySchedule } from "./features/StudySchedule";
+import { StudyPost } from "./features/StudyPost";
+import { Flashcards } from "./features/Flashcards";
+import { FormulaSheet } from "./features/FormulaSheet";
+import { TextToSpeech } from "./features/TextToSpeech";
 
 interface MainContentProps {
   activeFeature: string;
@@ -8,20 +14,32 @@ interface MainContentProps {
 export function MainContent({ activeFeature }: MainContentProps) {
   const renderFeature = () => {
     switch (activeFeature) {
-      case 'summary-table':
-        // The component SummaryTable is not in the scope of the allowed files.
-        // I will add a placeholder for it.
-        return <div>טבלת סיכום תופיע כאן</div>;
-      case 'quiz-generator':
+      case 'dashboard':
+        return <Dashboard />;
+      case 'quiz':
         return <QuizGenerator />;
+      case 'summary':
+        return <SummaryTable />;
+      case 'schedule':
+        return <StudySchedule />;
+      case 'post':
+        return <StudyPost />;
+      case 'flashcards':
+        return <Flashcards />;
+      case 'formulas':
+        return <FormulaSheet />;
+      case 'tts':
+        return <TextToSpeech />;
       default:
-        return <div className="text-center p-8 text-gray-500">אנא בחר כלי מהתפריט</div>;
+        return <Dashboard />;
     }
   };
 
   return (
-    <main className="flex-1 p-6 sm:p-8 md:p-10 bg-gray-50 rounded-r-3xl shadow-inner overflow-y-auto">
-      {renderFeature()}
+    <main className="flex-1 p-6 overflow-auto">
+      <div className="max-w-6xl mx-auto">
+        {renderFeature()}
+      </div>
     </main>
   );
 }
