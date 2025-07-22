@@ -1,31 +1,66 @@
 import OpenAI from 'npm:openai';
-import { generateChartsFromText } from '@/functions';
-import { generateImage } from '@/integrations/core';
 
 const openai = new OpenAI({
   apiKey: Deno.env.get("OPENAI_API_KEY"),
 });
 
-// Helper function to generate a single chart
-async function generateChartForSlide(text: string, topic: string) {
+// Helper function to generate chart data directly
+async function generateChartDataForSlide(text: string, slideTitle: string) {
   try {
-    const chartDataResponse = await generateChartsFromText({ text, topic });
-    if (chartDataResponse && chartDataResponse.charts && chartDataResponse.charts.length > 0) {
-      return chartDataResponse.charts[0]; // Return the first chart found
+    const prompt = `
+      Based on the following text, generate data for a chart relevant to the slide titled "${slideTitle}".
+      The chart should be one of the following types: 'bar', 'pie', 'line'.
+      Provide a title for the chart, the chart type, and the data points (name, value).
+      Also, provide a brief explanation of what the chart shows.
+
+      Text:
+      ---
+      ${text}
+      ---
+
+      Return a single JSON object with the following structure:
+      {
+        "title": "Chart Title",
+        "type": "bar",
+        "data": [
+          { "name": "Category A", "value": 123 },
+          { "name": "Category B", "value": 456 }
+        ],
+        "explanation": "This chart shows..."
+      }
+    `;
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        { role: "system", content: "You are an expert in data visualization and analysis." },
+        { role: "user", content: prompt },
+      ],
+      response_format: { type: "json_object" },
+    });
+    const chartData = JSON.parse(response.choices[0].message.content || "{}");
+    // Basic validation
+    if (chartData.title && chartData.type && chartData.data) {
+      return chartData;
     }
     return null;
   } catch (e) {
-    console.error("Could not generate chart for slide:", e);
+    console.error("Could not generate chart data for slide:", e);
     return null;
   }
 }
 
-// Helper function to generate an image
+// Helper function to generate an image using DALL-E
 async function generateImageForSlide(slideContent: string[]) {
   try {
-    const imagePrompt = `צור תמונה פוטוריאליסטית המייצגת את הרעיון המרכזי במשפטים הבאים: ${slideContent.join(' ')}. התמונה צריכה להיות מקצועית ומתאימה למצגת עסקית.`;
-    const { url } = await generateImage({ prompt: imagePrompt });
-    return url;
+    const imagePrompt = `Create a photorealistic image representing the key concept in the following sentences: ${slideContent.join(' ')}. The image should be professional and suitable for a business presentation.`;
+    const response = await openai.images.generate({
+      model: "dall-e-3",
+      prompt: imagePrompt,
+      n: 1,
+      size: "1024x1024",
+      response_format: "url",
+    });
+    return response.data[0].url;
   } catch (e) {
     console.error("Could not generate image for slide:", e);
     return null;
@@ -41,27 +76,27 @@ Deno.serve(async (req) => {
     }
 
     const initialPrompt = `
-      צור מצגת מקצועית ומפורטת בעברית בנושא "${topic}" על בסיס הטקסט הבא.
-      המצגת צריכה להכיל ${slideCount} שקופיות.
-      עבור כל שקופית, ספק כותרת ו-3-5 נקודות תוכן מעמיקות המנתחות את הטקסט.
-      בנוסף, לכל שקופית, ציין אם היא מתאימה יותר ל'גרף', 'תמונה' או 'טקסט בלבד' תחת המפתח "visual_type".
-      - בחר 'גרף' אם השקופית מכילה נתונים כמותיים או השוואתיים.
-      - בחר 'תמונה' אם התוכן הוא תיאורי וניתן לייצוג חזותי.
-      - בחר 'טקסט בלבד' במקרים אחרים.
+      Create a professional and detailed presentation in Hebrew on the topic "${topic}" based on the following text.
+      The presentation should have ${slideCount} slides.
+      For each slide, provide a title and 3-5 in-depth content points analyzing the text.
+      Additionally, for each slide, specify whether it is more suitable for a 'graph', 'image', or 'text only' under the key "visual_type".
+      - Choose 'graph' if the slide contains quantitative or comparative data.
+      - Choose 'image' if the content is descriptive and can be visually represented.
+      - Choose 'text only' in other cases.
       
-      הטקסט לניתוח:
+      Text for analysis:
       ---
       ${text}
       ---
 
-      החזר JSON במבנה הבא:
+      Return JSON in the following structure:
       {
-        "title": "כותרת המצגת",
+        "title": "Presentation Title",
         "slides": [
           {
-            "title": "כותרת שקופית",
-            "content": ["נקודה 1", "נקודה 2"],
-            "visual_type": "גרף" | "תמונה" | "טקסט בלבד"
+            "title": "Slide Title",
+            "content": ["Point 1", "Point 2"],
+            "visual_type": "graph" | "image" | "text only"
           }
         ]
       }
@@ -70,7 +105,7 @@ Deno.serve(async (req) => {
     const response = await openai.chat.completions.create({
       model: "gpt-4o",
       messages: [
-        { role: "system", content: "אתה מומחה ביצירת מצגות עסקיות מעמיקות ומפורטות בעברית, עם יכולת לזהות הזדמנויות לשילוב עזרים חזותיים." },
+        { role: "system", content: "You are an expert in creating in-depth and detailed business presentations in Hebrew, with the ability to identify opportunities for integrating visual aids." },
         { role: "user", content: initialPrompt },
       ],
       response_format: { type: "json_object" },
@@ -79,21 +114,18 @@ Deno.serve(async (req) => {
     const presentationStructure = JSON.parse(response.choices[0].message.content || "{}");
 
     const finalSlides = [];
-    let visualCount = 0;
 
     for (const slide of presentationStructure.slides) {
       let visual = null;
       if (slide.visual_type === 'גרף') {
-        const chartData = await generateChartForSlide(text, slide.title);
+        const chartData = await generateChartDataForSlide(text, slide.title);
         if (chartData) {
           visual = { type: 'chart', data: chartData };
-          visualCount++;
         }
       } else if (slide.visual_type === 'תמונה') {
         const imageUrl = await generateImageForSlide(slide.content);
         if (imageUrl) {
           visual = { type: 'image', url: imageUrl };
-          visualCount++;
         }
       }
       finalSlides.push({ ...slide, visual });
@@ -106,7 +138,7 @@ Deno.serve(async (req) => {
         const blockHasVisual = finalSlides.slice(i - 2, i + 1).some(s => s.visual);
         if (!blockHasVisual) {
           const slideToEnhance = finalSlides[i]; // Enhance the last slide of the block
-          const chartData = await generateChartForSlide(text, slideToEnhance.title);
+          const chartData = await generateChartDataForSlide(text, slideToEnhance.title);
           if (chartData) {
             slideToEnhance.visual = { type: 'chart', data: chartData };
           }
