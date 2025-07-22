@@ -26,27 +26,25 @@ export function TextToSpeech() {
     setAudioUrl(null);
 
     try {
-      const response = await readTextOutLoud({ text });
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+      const result = await readTextOutLoud({ text });
+
+      if (result && result.audioData) {
+        const url = `data:audio/mpeg;base64,${result.audioData}`;
+        setAudioUrl(url);
+
+        toast({
+          title: "הצלחה!",
+          description: "הקול נוצר בהצלחה.",
+        });
+      } else {
+        throw new Error(result.error || "תגובה לא תקינה מהשרת");
       }
-
-      const audioBlob = await response.blob();
-      const url = URL.createObjectURL(audioBlob);
-      setAudioUrl(url);
-
-      toast({
-        title: "הצלחה!",
-        description: "הקול נוצר בהצלחה.",
-      });
 
     } catch (error) {
       console.error("Error generating speech:", error);
       toast({
         title: "שגיאה",
-        description: "אירעה שגיאה ביצירת הקול. אנא נסה שוב.",
+        description: error instanceof Error ? error.message : "אירעה שגיאה ביצירת הקול. אנא נסה שוב.",
         variant: "destructive",
       });
     } finally {

@@ -1,4 +1,5 @@
 import OpenAI from 'npm:openai';
+import { encode } from "https://deno.land/std@0.208.0/encoding/base64.ts";
 
 // Initialize the OpenAI client with the API key from environment variables
 const openai = new OpenAI({
@@ -25,16 +26,16 @@ Deno.serve(async (req) => {
       input: text,
     });
 
-    // Get the audio data as a buffer
+    // Get the audio data as a buffer and encode it to base64
     const buffer = await mp3.arrayBuffer();
+    const base64Audio = encode(buffer);
 
-    // Return the audio file as the response
-    return new Response(buffer, {
+    // Return the base64 encoded audio in a JSON object
+    return new Response(JSON.stringify({ audioData: base64Audio }), {
       status: 200,
-      headers: {
-        "Content-Type": "audio/mpeg",
-      },
+      headers: { "Content-Type": "application/json" },
     });
+    
   } catch (error) {
     console.error('Error generating speech:', error);
     return new Response(JSON.stringify({ error: 'Failed to generate audio' }), {
