@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react';
 import { useToast } from "@/hooks/use-toast";
-import { invokeLLM, uploadFile, extractDataFromUploadedFile } from "@/integrations/core";
+import { uploadFile, extractDataFromUploadedFile } from "@/integrations/core";
+import { createQuizQuestions } from "@/functions";
 
 export interface QuizQuestion {
   question: string;
@@ -34,7 +35,7 @@ export const useQuizGenerator = () => {
     const timeoutPromise = new Promise<never>((_, reject) => {
       setTimeout(() => reject(new Error('Request timeout')), timeoutMs);
     });
-    
+
     return Promise.race([promise, timeoutPromise]);
   };
 
@@ -60,18 +61,18 @@ export const useQuizGenerator = () => {
     setUploadProgress('מעלה קובץ...');
 
     try {
-       toast({
+      toast({
         title: "מעלה קובץ...",
         description: "שלב 1 מתוך 2: מעלה את הקובץ לשרת.",
       });
       const { file_url } = await withTimeout(uploadFile({ file: selectedFile }), 300000); // Increased timeout to 5 minutes
-      
+
       setUploadProgress('מעבד את הקובץ...');
       toast({
         title: "מעבד את הקובץ...",
         description: "שלב 2 מתוך 2: מחלץ טקסט מהקובץ.",
       });
-      
+
       const schema = {
         type: "object",
         properties: { text_content: { type: "string" } },
@@ -94,7 +95,7 @@ export const useQuizGenerator = () => {
     } catch (error) {
       console.error("Error processing file:", error);
       let description = "לא הצלחנו לחלץ את הטקסט מהקובץ. אנא ודא שהקובץ תקין ונסה שוב.";
-      
+
       if (error instanceof Error) {
         if (error.message === 'Request timeout') {
           description = "הבקשה ארכה יותר מדי זמן. אנא נסה שוב עם קובץ קטן יותר.";
@@ -102,7 +103,7 @@ export const useQuizGenerator = () => {
           description = "אירעה שגיאת רשת. אנא בדוק את חיבור האינטרנט ונסה שוב.";
         }
       }
-      
+
       toast({
         title: "שגיאה בעיבוד הקובץ",
         description: description,
@@ -132,71 +133,16 @@ export const useQuizGenerator = () => {
     setIsSubmitted(false);
 
     try {
-      const prompt = `You are an expert quiz creator for university students. Your task is to generate a multiple-choice quiz in Hebrew with ${questionCount} questions based on the provided academic text.
-
-CRITICAL INSTRUCTIONS:
-1. DEEP CONCEPTUAL QUESTIONS: Generate questions that test deep understanding of the core concepts, arguments, and data presented in the text. Avoid superficial questions.
-2. IGNORE METADATA: DO NOT create questions about the text's structure, titles, chapter names, or section numbers. Focus on the content itself.
-3. UNIQUE AND DISTINCT ANSWERS: For each question, ensure that all 4 answer options (including the correct and incorrect ones) are unique, distinct, and plausible. Do not repeat answers.
-4. HEBREW LANGUAGE: The entire quiz (title, questions, options, explanation) must be in Hebrew.
-5. QUESTION FORMAT: Ensure every question ends with a question mark (?).
-6. EXPLANATION: For each question, provide a brief explanation for the correct answer.
-
-Here is the text:
-${sourceText}
-
-Please provide a concise title for the quiz that reflects the main topic of the text.
-
-Generate the quiz now based only on the substantive content of the text above.
-Return the result in the specified JSON format.`;
-
-      const result = await invokeLLM({
-        prompt,
-        response_json_schema: {
-          type: "object",
-          properties: {
-            title: { type: "string" },
-            questions: {
-              type: "array",
-              items: {
-                type: "object",
-                properties: {
-                  question: { type: "string" },
-                  options: { type: "array", items: { type: "string" } },
-                  correctAnswer: { type: "string" },
-                  explanation: { type: "string" }
-                },
-                required: ["question", "options", "correctAnswer", "explanation"]
-              }
-            }
-          },
-          required: ["title", "questions"]
-        }
+      const result = await createQuizQuestions({
+        text: sourceText,
+        numQuestions: questionCount,
       });
 
       if (result && result.questions && Array.isArray(result.questions)) {
-        const processedQuestions = (result.questions as QuizQuestion[]).map(question => {
-          if (!Array.isArray(question.options)) {
-            console.warn('Options is not an array for question:', question.question);
-            return question;
-          }
-          const uniqueOptions = new Set(question.options);
-          if (uniqueOptions.size < question.options.length) {
-            console.warn('Duplicate options found and removed for question:', question.question);
-            return { ...question, options: Array.from(uniqueOptions) };
-          }
-          return question;
-        });
-
-        const processedQuizData = {
-          ...result,
-          questions: processedQuestions
-        };
-
-        setQuizData(processedQuizData as QuizData);
+        setQuizData(result as QuizData);
         toast({
           title: "הצלחה!",
-          description: `נוצר חידון עם ${processedQuizData.questions.length} שאלות`,
+          description: `נוצר חידון עם ${result.questions.length} שאלות`,
         });
       } else {
         throw new Error("Invalid quiz data received");
@@ -225,7 +171,7 @@ Return the result in the specified JSON format.`;
 
     const question = quizData.questions[questionIndex];
     const userAnswer = userAnswers[questionIndex];
-    
+
     if (!userAnswer) {
       toast({
         title: "שגיאה",
@@ -236,7 +182,7 @@ Return the result in the specified JSON format.`;
     }
 
     const isCorrect = userAnswer === question.correctAnswer;
-    
+
     const updatedQuestions = [...quizData.questions];
     updatedQuestions[questionIndex] = {
       ...question,

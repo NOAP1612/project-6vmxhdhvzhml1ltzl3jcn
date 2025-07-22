@@ -1,89 +1,82 @@
+import { OpenAI } from "npm:openai@4.47.1";
+
+const openai = new OpenAI({
+  apiKey: Deno.env.get("OPENAI_API_KEY"),
+});
+
 Deno.serve(async (req) => {
   try {
-    const { topic, numQuestions, questionType, language } = await req.json();
-    
-    const openaiApiKey = Deno.env.get("OPENAI_API_KEY");
-    if (!openaiApiKey) {
-      return new Response(JSON.stringify({ error: "OpenAI API key not configured" }), {
-        status: 500,
+    const { text, numQuestions = 10, language = 'hebrew' } = await req.json();
+
+    if (!text) {
+      return new Response(JSON.stringify({ error: "Text input is required" }), {
+        status: 400,
         headers: { "Content-Type": "application/json" },
       });
     }
 
-    const prompt = language === "hebrew" 
-      ? `צור ${numQuestions} שאלות ${questionType === 'multiple' ? 'אמריקאיות' : questionType === 'open' ? 'פתוחות' : 'מעורבות'} בנושא "${topic}". 
-         עבור שאלות אמריקאיות, כלול 4 תשובות אפשריות עם סימון התשובה הנכונה.
-         החזר את התוצאה בפורמט JSON עם המבנה הבא:
-         {
-           "questions": [
-             {
-               "question": "השאלה",
-               "type": "multiple" או "open",
-               "options": ["אפשרות 1", "אפשרות 2", "אפשרות 3", "אפשרות 4"] (רק לשאלות אמריקאיות),
-               "correctAnswer": "התשובה הנכונה",
-               "explanation": "הסבר קצר"
-             }
-           ]
-         }`
-      : `Create ${numQuestions} ${questionType === 'multiple' ? 'multiple choice' : questionType === 'open' ? 'open-ended' : 'mixed'} questions about "${topic}".
-         For multiple choice questions, include 4 options with the correct answer marked.
-         Return the result in JSON format with this structure:
-         {
-           "questions": [
-             {
-               "question": "The question",
-               "type": "multiple" or "open",
-               "options": ["Option 1", "Option 2", "Option 3", "Option 4"] (only for multiple choice),
-               "correctAnswer": "The correct answer",
-               "explanation": "Brief explanation"
-             }
-           ]
-         }`;
+    const prompt = `
+You are an expert quiz creator for university students. Your task is to generate a multiple-choice quiz in Hebrew with ${numQuestions} questions based on the provided academic text.
 
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${openaiApiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "gpt-4",
-        messages: [
-          {
-            role: "system",
-            content: language === "hebrew" 
-              ? "אתה מורה מומחה שיוצר שאלות לימוד איכותיות בעברית. השתמש בעברית תקנית וברורה."
-              : "You are an expert teacher creating high-quality educational questions. Use clear and proper English."
-          },
-          {
-            role: "user",
-            content: prompt
-          }
-        ],
-        temperature: 0.7,
-      }),
+**CRITICAL INSTRUCTIONS:**
+1.  **DEEP CONCEPTUAL QUESTIONS:** Generate questions that test deep understanding of the core concepts, arguments, and data presented in the text.
+2.  **IGNORE METADATA:** DO NOT create questions about the text's structure, titles, chapter names, or section numbers. Focus on the content itself.
+3.  **UNIQUE AND DISTINCT ANSWERS:** For each question, ensure that all 4 answer options (including the correct and incorrect ones) are unique, distinct, and plausible. Do not repeat answers.
+4.  **HEBREW LANGUAGE:** The entire quiz (title, questions, options, explanation) must be in Hebrew.
+5.  **JSON OUTPUT:** The final output must be a valid JSON object.
+
+Here is the text:
+---
+${text}
+---
+
+Generate the quiz now based *only* on the substantive content of the text above, with a concise title that reflects the main topic.
+Return the result in the specified JSON format:
+{
+  "title": "כותרת החידון",
+  "questions": [
+    {
+      "question": "השאלה כאן?",
+      "options": ["אפשרות 1", "אפשרות 2", "אפשרות 3", "אפשרות 4"],
+      "correctAnswer": "התשובה הנכונה",
+      "explanation": "הסבר קצר למה זו התשובה הנכונה"
+    }
+  ]
+}
+`;
+    
+    const response = await openai.chat.completions.create({
+      model: 'gpt-4o', // Upgraded model for higher quality
+      messages: [
+        { role: 'system', content: 'You are an expert quiz creator for university students. Always return a valid JSON response in Hebrew.' },
+        { role: 'user', content: prompt }
+      ],
+      response_format: { type: "json_object" },
     });
 
-    const data = await response.json();
-    const content = data.choices[0].message.content;
+    const content = response.choices[0].message.content;
+    if (!content) {
+      throw new Error("OpenAI returned empty content.");
+    }
     
-    try {
-      const parsedContent = JSON.parse(content);
-      return new Response(JSON.stringify(parsedContent), {
-        status: 200,
-        headers: { "Content-Type": "application/json" },
-      });
-    } catch (parseError) {
-      return new Response(JSON.stringify({ 
-        error: "Failed to parse OpenAI response",
-        rawContent: content 
-      }), {
-        status: 500,
-        headers: { "Content-Type": "application/json" },
+    // Post-processing to remove duplicate options, just in case.
+    const quizData = JSON.parse(content);
+    if (quizData.questions) {
+      quizData.questions.forEach(q => {
+        if (q.options && Array.isArray(q.options)) {
+          const uniqueOptions = new Set(q.options);
+          q.options = Array.from(uniqueOptions);
+        }
       });
     }
 
+    return new Response(JSON.stringify(quizData), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
+
   } catch (error) {
+    console.error("Error creating quiz:", error);
     return new Response(JSON.stringify({ error: error.message }), {
       status: 500,
       headers: { "Content-Type": "application/json" },
