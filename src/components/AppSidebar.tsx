@@ -20,7 +20,8 @@ import {
   Calculator,
   Volume2,
   Home,
-  Settings
+  Settings,
+  BarChart3
 } from "lucide-react";
 
 interface AppSidebarProps {
@@ -68,6 +69,11 @@ const menuItems = [
     id: "tts",
     title: "קריאה בקול",
     icon: Volume2,
+  },
+  {
+    id: "charts",
+    title: "מחולל תרשימים",
+    icon: BarChart3,
   },
 ];
 

@@ -6,6 +6,7 @@ import { StudyPost } from "./features/StudyPost";
 import { Flashcards } from "./features/Flashcards";
 import { FormulaSheet } from "./features/FormulaSheet";
 import { TextToSpeech } from "./features/TextToSpeech";
+import { ChartGenerator } from "./features/ChartGenerator";
 
 interface MainContentProps {
   activeFeature: string;
@@ -30,6 +31,8 @@ export function MainContent({ activeFeature }: MainContentProps) {
         return <FormulaSheet />;
       case 'tts':
         return <TextToSpeech />;
+      case 'charts':
+        return <ChartGenerator />;
       default:
         return <Dashboard />;
     }
