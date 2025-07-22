@@ -65,7 +65,8 @@
     @apply border-border;
   }
   body {
-    @apply bg-white text-gray-900 font-english min-h-screen;
+    @apply text-gray-900 font-english min-h-screen;
+    background: linear-gradient(135deg, #5BD383 0%, #29B366 100%);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
@@ -143,7 +144,7 @@
   }
 
   .green-gradient-bg {
-    background: linear-gradient(135deg, #22c55e 0%, #16a34a 35%, #15803d 70%, #166534 100%);
+    background: linear-gradient(135deg, #5BD383 0%, #29B366 100%);
   }
 
   .purple-glow {
